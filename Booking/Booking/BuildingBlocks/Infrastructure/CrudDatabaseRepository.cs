@@ -24,7 +24,7 @@ namespace Booking.BuildingBlocks.Infrastructure
             return task.Result;
         }
 
-        public TEntity Get(long id)
+        public TEntity Get(Guid id)
         {
             var entity = _dbSet.Find(id);
             if (entity == null) throw new KeyNotFoundException("Not found: " + id);
@@ -52,7 +52,7 @@ namespace Booking.BuildingBlocks.Infrastructure
             return entity;
         }
 
-        public void Delete(long id)
+        public void Delete(Guid id)
         {
             var entity = Get(id);
             _dbSet.Remove(entity);

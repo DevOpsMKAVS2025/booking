@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Booking.Infrastructure.Database;
+using Booking;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.ConfigureBooking();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -18,11 +20,6 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-    db.Database.Migrate();
-}
 
 if (app.Environment.IsDevelopment())
 {

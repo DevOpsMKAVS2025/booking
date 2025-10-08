@@ -24,7 +24,7 @@ namespace Booking.BuildingBlocks.Core.UseCases
             return MapToDto(result);
         }
 
-        public Result<TDto> Get(int id)
+        public Result<TDto> Get(Guid id)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Booking.BuildingBlocks.Core.UseCases
             }
         }
 
-        public virtual Result Delete(int id)
+        public virtual Result Delete(Guid id)
         {
             try
             {
