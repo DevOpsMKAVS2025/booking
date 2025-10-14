@@ -6,7 +6,7 @@ namespace Booking.Domain.Entities
     {
         public string Name { get; set; }
         public string Location { get; set; }
-        public ConvenieceType Convenience {  get; set; }
+        public List<ConvenieceType> Conveniences {  get; set; }
         public List<string> Photos { get; set; }
         public int MinGuestNumber { get; set; }
         public int MaxGuestNumber { get; set; }

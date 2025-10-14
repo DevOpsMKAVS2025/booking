@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Booking.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20251008195309_DateRange_And_Price")]
-    partial class DateRange_And_Price
+    [Migration("20251014201623_migration-for-accommodation")]
+    partial class migrationforaccommodation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,9 @@ namespace Booking.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Convenience")
-                        .HasColumnType("integer");
+                    b.PrimitiveCollection<int[]>("Conveniences")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
 
                     b.Property<string>("Location")
                         .IsRequired()
@@ -91,11 +92,9 @@ namespace Booking.Migrations
                             b1.Property<Guid>("AccommodationId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<int>("Id")
+                            b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasColumnType("numeric");
@@ -115,8 +114,8 @@ namespace Booking.Migrations
                                     b2.Property<Guid>("PriceAccommodationId")
                                         .HasColumnType("uuid");
 
-                                    b2.Property<int>("PriceId")
-                                        .HasColumnType("integer");
+                                    b2.Property<Guid>("PriceId")
+                                        .HasColumnType("uuid");
 
                                     b2.Property<DateTime>("From")
                                         .HasColumnType("timestamp with time zone");

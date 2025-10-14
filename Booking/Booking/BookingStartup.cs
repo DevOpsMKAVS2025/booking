@@ -3,6 +3,7 @@ using Booking.Application.Interfaces;
 using Booking.Application.UseCases;
 using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
+using Booking.Domain.Entities.RepositoryInterfaces;
 using Booking.Infrastructure.Database;
 using Booking.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace Booking
         }
         private static void SetupInfrastructure(IServiceCollection services)
         {
-            services.AddScoped<ICrudRepository<Accommodation>, AccommodationRepository>();
+            services.AddScoped<IAccommodationRepository, AccommodationRepository>();
 
             services.AddDbContext<BookingDbContext>(opt =>
             opt.UseNpgsql("Host=localhost;Port=5432;Database=booking-database;Username=postgres;Password=admin",

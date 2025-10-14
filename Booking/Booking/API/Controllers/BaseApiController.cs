@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
-namespace Gym_tracker.Controllers
+namespace Booking.API.Controllers
 {
 
     [ApiController]

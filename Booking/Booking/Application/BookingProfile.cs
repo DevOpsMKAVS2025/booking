@@ -9,6 +9,7 @@ namespace Booking.Application
         public BookingProfile() 
         {
             CreateMap<AccommodationDto, Accommodation>().ReverseMap();
+            CreateMap<PriceDto, Price>().ReverseMap();
         }
     }
 }

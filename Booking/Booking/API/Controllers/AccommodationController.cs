@@ -1,7 +1,5 @@
 ﻿using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
-using Gym_tracker.Controllers;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.API.Controllers
@@ -48,6 +46,26 @@ namespace Booking.API.Controllers
         public IActionResult Delete(Guid id)
         {
             var result = _accommodationService.Delete(id);
+            return CreateResponse(result);
+        }
+        [HttpPost("price")]
+        public IActionResult CreatePrice([FromBody] PriceDto price)
+        {
+            var result = _accommodationService.CreatePrice(price);
+            return CreateResponse(result);
+        }
+
+        [HttpGet("price/{accomodationId}/{priceId}")]
+        public IActionResult GetPrice(Guid priceId, Guid accomodationId)
+        {
+            var result = _accommodationService.GetPrice(accomodationId, priceId);
+            return CreateResponse(result);
+        }
+
+        [HttpPut("price")]
+        public IActionResult UpdatePrice([FromBody] PriceDto price)
+        {
+            var result = _accommodationService.UpdatePrice(price);
             return CreateResponse(result);
         }
     }

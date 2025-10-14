@@ -4,10 +4,10 @@ namespace Booking.Application.Dtos
 {
     public class AccommodationDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
-        public ConvenieceType Convenience { get; set; }
+        public List<ConvenieceType> Conveniences { get; set; }
         public List<string> Photos { get; set; }
         public int MinGuestNumber { get; set; }
         public int MaxGuestNumber { get; set; }

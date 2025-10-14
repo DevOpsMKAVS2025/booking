@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Booking.Migrations
 {
     /// <inheritdoc />
-    public partial class DateRange_And_Price : Migration
+    public partial class migrationforaccommodation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,7 +24,7 @@ namespace Booking.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: false),
-                    Convenience = table.Column<int>(type: "integer", nullable: false),
+                    Conveniences = table.Column<int[]>(type: "integer[]", nullable: false),
                     Photos = table.Column<List<string>>(type: "text[]", nullable: false),
                     MinGuestNumber = table.Column<int>(type: "integer", nullable: false),
                     MaxGuestNumber = table.Column<int>(type: "integer", nullable: false)
@@ -62,9 +62,8 @@ namespace Booking.Migrations
                 schema: "booking",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AccommodationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Duration_From = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Duration_To = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
