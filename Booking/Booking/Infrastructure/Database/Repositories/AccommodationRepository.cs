@@ -73,7 +73,9 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Price UpdatePrice(Price price)
         {
+            var oldPrice = GetPrice(price.AccommodationId, price.Id);
             var accommodation = Get(price.AccommodationId);
+            accommodation.Prices.Remove(oldPrice);
             accommodation.Prices.Add(price);
             Update(accommodation);
             return price;
@@ -84,6 +86,31 @@ namespace Booking.Infrastructure.Database.Repositories
             var accommodation = Get(accommodationId);
             var price = accommodation.Prices.Find(x=> x.Id == priceId);  
             return price;
+        }
+
+        public Availability CreateAvailability(Availability availability)
+        {
+            var accommodation = Get(availability.AccommodationId);
+            accommodation.Availability.Add(availability);
+            Update(accommodation);
+            return availability;
+        }
+
+        public Availability UpdateAvailability(Availability availability)
+        {
+            var oldAvailability = GetAvailability(availability.AccommodationId, availability.Id);
+            var accommodation = Get(availability.AccommodationId);
+            accommodation.Availability.Remove(oldAvailability);
+            accommodation.Availability.Add(availability);
+            Update(accommodation);
+            return availability;
+        }
+
+        public Availability GetAvailability(Guid accommodationId, Guid availabilityId)
+        {
+            var accommodation = Get(accommodationId);
+            var availability = accommodation.Availability.Find(x=>x.Id==availabilityId);
+            return availability;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -35,21 +34,20 @@ namespace Booking.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccommodationAvailability",
+                name: "Accommodation_Availability",
                 schema: "booking",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AccommodationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    From = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    To = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Duration_From = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Duration_To = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccommodationAvailability", x => new { x.AccommodationId, x.Id });
+                    table.PrimaryKey("PK_Accommodation_Availability", x => new { x.AccommodationId, x.Id });
                     table.ForeignKey(
-                        name: "FK_AccommodationAvailability_Accommodations_AccommodationId",
+                        name: "FK_Accommodation_Availability_Accommodations_AccommodationId",
                         column: x => x.AccommodationId,
                         principalSchema: "booking",
                         principalTable: "Accommodations",
@@ -58,7 +56,7 @@ namespace Booking.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccommodationPrices",
+                name: "Accommodation_Prices",
                 schema: "booking",
                 columns: table => new
                 {
@@ -71,9 +69,9 @@ namespace Booking.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccommodationPrices", x => new { x.AccommodationId, x.Id });
+                    table.PrimaryKey("PK_Accommodation_Prices", x => new { x.AccommodationId, x.Id });
                     table.ForeignKey(
-                        name: "FK_AccommodationPrices_Accommodations_AccommodationId",
+                        name: "FK_Accommodation_Prices_Accommodations_AccommodationId",
                         column: x => x.AccommodationId,
                         principalSchema: "booking",
                         principalTable: "Accommodations",
@@ -86,11 +84,11 @@ namespace Booking.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AccommodationAvailability",
+                name: "Accommodation_Availability",
                 schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "AccommodationPrices",
+                name: "Accommodation_Prices",
                 schema: "booking");
 
             migrationBuilder.DropTable(

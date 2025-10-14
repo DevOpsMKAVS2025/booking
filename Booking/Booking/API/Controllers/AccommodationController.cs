@@ -68,5 +68,25 @@ namespace Booking.API.Controllers
             var result = _accommodationService.UpdatePrice(price);
             return CreateResponse(result);
         }
+        [HttpPost("availability")]
+        public IActionResult CreateAvailability([FromBody] AvailabilityDto availability)
+        {
+            var result = _accommodationService.CreateAvailability(availability);
+            return CreateResponse(result);
+        }
+
+        [HttpGet("availability/{accomodationId}/{priceId}")]
+        public IActionResult GetAvailability(Guid availabilityId, Guid accomodationId)
+        {
+            var result = _accommodationService.GetAvailability(accomodationId, availabilityId);
+            return CreateResponse(result);
+        }
+
+        [HttpPut("availability")]
+        public IActionResult UpdateAvailability([FromBody] AvailabilityDto availability)
+        {
+            var result = _accommodationService.UpdateAvailability(availability);
+            return CreateResponse(result);
+        }
     }
 }

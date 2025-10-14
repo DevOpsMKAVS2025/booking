@@ -10,6 +10,7 @@ namespace Booking.Application
         {
             CreateMap<AccommodationDto, Accommodation>().ReverseMap();
             CreateMap<PriceDto, Price>().ReverseMap();
+            CreateMap<AvailabilityDto, Availability>().ReverseMap();   
         }
     }
 }

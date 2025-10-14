@@ -106,12 +106,51 @@ namespace Booking.Application.UseCases
                 return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
             }
         }
-        public Result<PriceDto> GetPrice(Guid AccommodationId, Guid priceId)
+        public Result<PriceDto> GetPrice(Guid accommodationId, Guid priceId)
         {
             try
             {
-                var result = _repository.GetPrice(AccommodationId, priceId);
+                var result = _repository.GetPrice(accommodationId, priceId);
                 return Result.Ok(_mapper.Map<PriceDto>(result));
+            }
+            catch (ArgumentException e)
+            {
+                return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
+            }
+        }
+
+        public Result<AvailabilityDto> CreateAvailability(AvailabilityDto availabilityDto)
+        {
+            try
+            {
+                var result = _repository.CreateAvailability(_mapper.Map<Availability>(availabilityDto));
+                return Result.Ok(_mapper.Map<AvailabilityDto>(result));
+            }
+            catch (ArgumentException e)
+            {
+                return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
+            }
+        }
+
+        public Result<AvailabilityDto> UpdateAvailability(AvailabilityDto availabilityDto)
+        {
+            try
+            {
+                var result = _repository.UpdateAvailability(_mapper.Map<Availability>(availabilityDto));
+                return Result.Ok(_mapper.Map<AvailabilityDto>(result));
+            }
+            catch (ArgumentException e)
+            {
+                return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
+            }
+        }
+
+        public Result<AvailabilityDto> GetAvailability(Guid accommodationId, Guid availabilityId)
+        {
+            try
+            {
+                var result = _repository.GetAvailability(accommodationId, availabilityId);
+                return Result.Ok(_mapper.Map<AvailabilityDto>(result));
             }
             catch (ArgumentException e)
             {

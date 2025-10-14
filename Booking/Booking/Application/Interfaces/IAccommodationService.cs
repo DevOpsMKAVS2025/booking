@@ -1,6 +1,5 @@
 ﻿using Booking.Application.Dtos;
 using Booking.BuildingBlocks.Core.UseCases;
-using Booking.Domain.Entities;
 using FluentResults;
 
 namespace Booking.Application.Interfaces
@@ -14,6 +13,9 @@ namespace Booking.Application.Interfaces
         public Result Delete(Guid id);
         public Result<PriceDto> CreatePrice(PriceDto priceDto);
         public Result<PriceDto> UpdatePrice(PriceDto priceDto);
-        public Result<PriceDto> GetPrice(Guid AccommodationId, Guid priceId);
+        public Result<PriceDto> GetPrice(Guid accommodationId, Guid priceId);
+        public Result<AvailabilityDto> CreateAvailability(AvailabilityDto availabilityDto);
+        public Result<AvailabilityDto> UpdateAvailability(AvailabilityDto availabilityDto);
+        public Result<AvailabilityDto> GetAvailability(Guid accommodationId, Guid availabilityId);
     }
 }

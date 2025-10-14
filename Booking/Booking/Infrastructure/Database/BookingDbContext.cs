@@ -15,14 +15,15 @@ namespace Booking.Infrastructure.Database
             modelBuilder.Entity<Accommodation>()
                 .OwnsMany(a => a.Availability, dr =>
                 {
-                    dr.ToTable("AccommodationAvailability");
+                    dr.ToTable("Accommodation_Availability");
                     dr.WithOwner().HasForeignKey("AccommodationId");
+                    dr.OwnsOne(av => av.Duration);
                 });
 
             modelBuilder.Entity<Accommodation>()
                 .OwnsMany(a => a.Prices, p =>
                 {
-                    p.ToTable("AccommodationPrices"); 
+                    p.ToTable("Accommodation_Prices"); 
                     p.WithOwner().HasForeignKey("AccommodationId");
                     p.OwnsOne(x => x.Duration);
                 });

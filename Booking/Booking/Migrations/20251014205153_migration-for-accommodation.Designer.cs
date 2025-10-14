@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Booking.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20251014201623_migration-for-accommodation")]
+    [Migration("20251014205153_migration-for-accommodation")]
     partial class migrationforaccommodation
     {
         /// <inheritdoc />
@@ -62,29 +62,46 @@ namespace Booking.Migrations
 
             modelBuilder.Entity("Booking.Domain.Entities.Accommodation", b =>
                 {
-                    b.OwnsMany("Booking.Domain.Entities.DateRange", "Availability", b1 =>
+                    b.OwnsMany("Booking.Domain.Entities.Availability", "Availability", b1 =>
                         {
                             b1.Property<Guid>("AccommodationId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<int>("Id")
+                            b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
-
-                            b1.Property<DateTime>("From")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<DateTime>("To")
-                                .HasColumnType("timestamp with time zone");
+                                .HasColumnType("uuid");
 
                             b1.HasKey("AccommodationId", "Id");
 
-                            b1.ToTable("AccommodationAvailability", "booking");
+                            b1.ToTable("Accommodation_Availability", "booking");
 
                             b1.WithOwner()
                                 .HasForeignKey("AccommodationId");
+
+                            b1.OwnsOne("Booking.Domain.Entities.DateRange", "Duration", b2 =>
+                                {
+                                    b2.Property<Guid>("AvailabilityAccommodationId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<Guid>("AvailabilityId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<DateTime>("From")
+                                        .HasColumnType("timestamp with time zone");
+
+                                    b2.Property<DateTime>("To")
+                                        .HasColumnType("timestamp with time zone");
+
+                                    b2.HasKey("AvailabilityAccommodationId", "AvailabilityId");
+
+                                    b2.ToTable("Accommodation_Availability", "booking");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("AvailabilityAccommodationId", "AvailabilityId");
+                                });
+
+                            b1.Navigation("Duration")
+                                .IsRequired();
                         });
 
                     b.OwnsMany("Booking.Domain.Entities.Price", "Prices", b1 =>
@@ -104,7 +121,7 @@ namespace Booking.Migrations
 
                             b1.HasKey("AccommodationId", "Id");
 
-                            b1.ToTable("AccommodationPrices", "booking");
+                            b1.ToTable("Accommodation_Prices", "booking");
 
                             b1.WithOwner()
                                 .HasForeignKey("AccommodationId");
@@ -125,7 +142,7 @@ namespace Booking.Migrations
 
                                     b2.HasKey("PriceAccommodationId", "PriceId");
 
-                                    b2.ToTable("AccommodationPrices", "booking");
+                                    b2.ToTable("Accommodation_Prices", "booking");
 
                                     b2.WithOwner()
                                         .HasForeignKey("PriceAccommodationId", "PriceId");
