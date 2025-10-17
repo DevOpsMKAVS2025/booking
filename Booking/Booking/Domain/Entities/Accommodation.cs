@@ -12,6 +12,7 @@ namespace Booking.Domain.Entities
         public int MaxGuestNumber { get; set; }
         public List<Availability> Availability { get; set; }
         public List<Price> Prices { get; set; }
+        public decimal GlobalPrice { get; set; }
     }
 
     public enum ConvenieceType

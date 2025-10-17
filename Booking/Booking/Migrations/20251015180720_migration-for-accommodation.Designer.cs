@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Booking.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20251014205153_migration-for-accommodation")]
+    [Migration("20251015180720_migration-for-accommodation")]
     partial class migrationforaccommodation
     {
         /// <inheritdoc />
@@ -36,6 +36,9 @@ namespace Booking.Migrations
                     b.PrimitiveCollection<int[]>("Conveniences")
                         .IsRequired()
                         .HasColumnType("integer[]");
+
+                    b.Property<decimal>("GlobalPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Location")
                         .IsRequired()

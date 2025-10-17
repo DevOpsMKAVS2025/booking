@@ -11,7 +11,8 @@ namespace Booking.Application.Dtos
         public List<string> Photos { get; set; }
         public int MinGuestNumber { get; set; }
         public int MaxGuestNumber { get; set; }
-        public List<Availability> Availability { get; set; }
-        public List<Price> Prices { get; set; }
+        public List<AvailabilityDto> Availability { get; set; }
+        public List<PriceDto> Prices { get; set; }
+        public decimal GlobalPrice { get; set; }
     }
 }

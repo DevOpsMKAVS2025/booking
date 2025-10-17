@@ -1,5 +1,6 @@
 ﻿using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
+using Booking.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.API.Controllers
@@ -87,6 +88,16 @@ namespace Booking.API.Controllers
         {
             var result = _accommodationService.UpdateAvailability(availability);
             return CreateResponse(result);
+        }
+        [HttpGet("filter")]
+        public IActionResult GetByFilters(
+            [FromQuery] string? location,
+            [FromQuery] int? guestNumber,
+            [FromQuery] DateTime? from,
+            [FromQuery] DateTime? to)
+        {
+            var result = _accommodationService.GetAccomodationByFilters(location, guestNumber.Value, from.Value, to.Value);
+            return Ok(result);
         }
     }
 }

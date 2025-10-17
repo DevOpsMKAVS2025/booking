@@ -26,7 +26,8 @@ namespace Booking.Migrations
                     Conveniences = table.Column<int[]>(type: "integer[]", nullable: false),
                     Photos = table.Column<List<string>>(type: "text[]", nullable: false),
                     MinGuestNumber = table.Column<int>(type: "integer", nullable: false),
-                    MaxGuestNumber = table.Column<int>(type: "integer", nullable: false)
+                    MaxGuestNumber = table.Column<int>(type: "integer", nullable: false),
+                    GlobalPrice = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {

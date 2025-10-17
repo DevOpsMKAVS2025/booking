@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Runtime.CompilerServices;
+using AutoMapper;
 using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
 using Booking.BuildingBlocks.Core;
@@ -156,6 +157,117 @@ namespace Booking.Application.UseCases
             {
                 return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
             }
+        }
+
+        public PagedResult<AccommodationAndPriceDto> GetAccomodationByFilters(string? location, int guestNumber, DateTime from, DateTime to)
+        {
+            var accommodations = _repository.GetPaged(0, 0);
+
+            var filteredAccommodations = accommodations.Results.AsQueryable();
+
+            List<AccommodationAndPriceDto> accommodationAndPriceDtos = new List<AccommodationAndPriceDto>();
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                filteredAccommodations = filteredAccommodations
+                    .Where(x => x.Location.Contains(location, StringComparison.OrdinalIgnoreCase));
+            }
+
+            filteredAccommodations = filteredAccommodations
+                .Where(x => x.MinGuestNumber <= guestNumber && x.MaxGuestNumber >= guestNumber);
+            
+            List<Accommodation> availableAccommodations = new();
+            
+            foreach (var acc in filteredAccommodations)
+            {
+                if (IsAvailable(acc, from, to))
+                    availableAccommodations.Add(acc);
+            }
+            
+
+            foreach (var acc in availableAccommodations)
+            {
+                var totalPrice = CalculateTotalPrice(acc, from, to, guestNumber);
+                var pricePer = CalculatePricePerNightOrPerson(totalPrice, acc, (to.Date - from.Date).Days, guestNumber);
+                accommodationAndPriceDtos.Add(new AccommodationAndPriceDto(
+                    acc.Id, 
+                    acc.Name, 
+                    acc.Location, 
+                    acc.Conveniences, 
+                    acc.Photos, 
+                    acc.MinGuestNumber, 
+                    acc.MaxGuestNumber, 
+                    totalPrice, 
+                    pricePer));
+            }
+
+            return new PagedResult<AccommodationAndPriceDto>(accommodationAndPriceDtos, accommodationAndPriceDtos.Count);
+        }
+        private decimal CalculateTotalPrice( Accommodation accommodation, DateTime fromDate, DateTime toDate, int guestCount)
+        {
+            decimal total = 0m;
+
+            for (var date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
+            {
+                var priceForDay = accommodation.Prices
+                    ?.FirstOrDefault(p => p.Duration.From <= date && p.Duration.To >= date);
+
+                decimal dayPrice;
+
+                if (priceForDay != null)
+                {
+                    dayPrice = priceForDay.Amount;
+
+                    if (priceForDay.PriceType == PriceType.PER_GUEST)
+                        dayPrice *= guestCount;
+                }
+                else
+                {
+                    dayPrice = accommodation.GlobalPrice;
+                }
+
+                total += dayPrice;
+            }
+
+            return total;
+        }
+        private decimal CalculatePricePerNightOrPerson(decimal price, Accommodation accommodation, int numberOfDays, int guestCount)
+        {
+            if (accommodation.Prices[0].PriceType == PriceType.PER_GUEST)
+                return price/guestCount/numberOfDays;
+            else
+                return price/numberOfDays;
+        }
+        private bool IsAvailable(Accommodation accommodation, DateTime fromDate, DateTime toDate)
+        {
+            if (accommodation.Availability == null || accommodation.Availability.Count == 0)
+                return false;
+
+            var sorted = accommodation.Availability
+                .OrderBy(a => a.Duration.From)
+                .ToList();
+
+            var merged = new List<DateRange>();
+            var current = sorted[0].Duration;
+
+            for (int i = 1; i < sorted.Count; i++)
+            {
+                var next = sorted[i].Duration;
+                if (next.From <= current.To.AddDays(1))
+                {
+                    current.To = next.To > current.To ? next.To : current.To;
+                }
+                else
+                {
+                    merged.Add(current);
+                    current = next;
+                }
+            }
+            merged.Add(current);
+
+            return merged.Any(range =>
+                range.From <= fromDate && range.To >= toDate
+            );
         }
     }
 }

@@ -34,6 +34,9 @@ namespace Booking.Migrations
                         .IsRequired()
                         .HasColumnType("integer[]");
 
+                    b.Property<decimal>("GlobalPrice")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
