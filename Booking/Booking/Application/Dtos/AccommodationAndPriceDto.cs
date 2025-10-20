@@ -12,6 +12,7 @@ namespace Booking.Application.Dtos
         public int MinGuestNumber { get; set; }
         public int MaxGuestNumber { get; set; }
         public decimal TotalPrice { get; set; }
+        public bool IsAutoReservation { get; set; }
         public decimal PricePerPersonOrNight { get; set; }
 
         public AccommodationAndPriceDto(Guid id, string name, string location, List<ConvenieceType> conveniences, List<string> photos, int minGuestNumber, int maxGuestNumber, decimal totalPrice, decimal pricePerPersonOrNight)

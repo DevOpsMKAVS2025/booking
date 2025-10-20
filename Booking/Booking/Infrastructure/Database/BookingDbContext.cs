@@ -10,7 +10,6 @@ namespace Booking.Infrastructure.Database
 
         public DbSet<Accommodation> Accommodations { get; set; }
         public DbSet<Request> Requests { get; set; }
-        public DbSet<Reservation> Reservations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,16 +42,6 @@ namespace Booking.Infrastructure.Database
 
                 entity.Property(r => r.State)
                       .HasConversion<string>();
-            });
-
-            modelBuilder.Entity<Reservation>(entity =>
-            {
-                entity.ToTable("Reservations");
-
-                entity.HasOne(r => r.Request)
-                      .WithMany() // jednosmerna veza
-                      .HasForeignKey(r => r.RequestId)
-                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

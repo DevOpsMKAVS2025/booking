@@ -13,7 +13,6 @@ namespace Booking.Domain.Entities
             public DateTime EndDate { get; set; }
             public int GuestNum { get; set; }
             public RequestState State { get; set; }
-            public bool IsAuto { get; set; } = false;
             public bool IsDeleted { get; set; } = false;
         }
 
@@ -21,7 +20,8 @@ namespace Booking.Domain.Entities
         {
             PENDING,
             ACCEPTED,
-            REJECTED
+            AUTO_REJECT,
+            USER_REJECT
         }
     }
 
