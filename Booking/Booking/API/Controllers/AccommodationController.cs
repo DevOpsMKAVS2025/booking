@@ -89,6 +89,7 @@ namespace Booking.API.Controllers
             var result = _accommodationService.UpdateAvailability(availability);
             return CreateResponse(result);
         }
+
         [HttpGet("filter")]
         public IActionResult GetByFilters(
             [FromQuery] string? location,
@@ -99,5 +100,13 @@ namespace Booking.API.Controllers
             var result = _accommodationService.GetAccomodationByFilters(location, guestNumber.Value, from.Value, to.Value);
             return Ok(result);
         }
+
+        [HttpPut("toggle/{id}")]
+        public IActionResult ToggleAutoReservation(Guid id)
+        {
+            var result = _accommodationService.ToggleAutoReservation(id);
+            return CreateResponse(result);
+        }
+
     }
 }

@@ -6,6 +6,7 @@ using Booking.BuildingBlocks.Core;
 using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
+using Booking.Infrastructure.Database.Repositories;
 using FluentResults;
 
 namespace Booking.Application.UseCases
@@ -269,5 +270,30 @@ namespace Booking.Application.UseCases
                 range.From <= fromDate && range.To >= toDate
             );
         }
+
+        public Result<AccommodationDto> ToggleAutoReservation(Guid accommodationId)
+        {
+            try
+            {
+                var accommodation = _repository.Get(accommodationId);
+                if (accommodation == null)
+                {
+                    return Result.Fail(FailureCode.NotFound)
+                                 .WithError("Accommodation not found");
+                }
+
+                accommodation.IsAutoReservation = !accommodation.IsAutoReservation;
+
+                var result = _repository.Update(accommodation);
+
+                return Result.Ok(_mapper.Map<AccommodationDto>(result));
+            }
+            catch (Exception e)
+            {
+                return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
+            }
+        }
+
+
     }
 }
