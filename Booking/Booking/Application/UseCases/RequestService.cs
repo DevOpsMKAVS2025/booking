@@ -1,116 +1,152 @@
-using System.Runtime.CompilerServices;
 using AutoMapper;
 using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
-using Booking.BuildingBlocks.Core;
 using Booking.BuildingBlocks.Core.UseCases;
-using Booking.Domain.Entities;
 using Booking.Domain.Entities.Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentResults;
-using Microsoft.EntityFrameworkCore;
 
-namespace Booking.Application.UseCases
+public class RequestService : BaseService<RequestDto, Request>, IRequestService
 {
-    public class RequestService : BaseService<RequestDto, Request>, IRequestService
+    private readonly IMapper _mapper;
+    private readonly IRequestRepository _repository;
+    private readonly IAccommodationRepository _accommodationRepository;
+
+    public RequestService(IMapper mapper, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository)
+        : base(mapper)
     {
-        protected readonly IMapper _mapper;
-        protected readonly IRequestRepository _repository;
-        protected readonly IAccommodationRepository _accommodationRepository;
+        _mapper = mapper;
+        _repository = requestRepository;
+        _accommodationRepository = accommodationRepository;
+    }
 
-        public RequestService(IMapper mapper, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository) : base(mapper)
-        {
-            _mapper = mapper;
-            _repository = requestRepository;
-            _accommodationRepository = accommodationRepository;
-        }
+    public Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize)
+    {
+        var result = _repository.GetPaged(page, pageSize);
+        return MapToDto(result);
+    }
 
-        public Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize)
+    public async Task<Result<RequestDto>> CreateRequest(RequestDto dto)
+    {
+        try
         {
-            var result = _repository.GetPaged(page, pageSize);
-            return MapToDto(result);
-        }
-
-        public async Task<Request> CreateRequest(Request request)
-        {
-            // 1. Load accommodation
-            var accommodation = this._accommodationRepository.Get(request.AccommodationId);
+            var accommodation = _accommodationRepository.Get(dto.AccommodationId);
             if (accommodation == null)
-                throw new Exception("Accommodation not found");
+                return Result.Fail<RequestDto>("Accommodation not found");
 
-            // 2. Check if is in the available time
             bool isInAvailability = accommodation.Availability.Any(av =>
-            request.StartDate >= av.Duration.From && request.EndDate <= av.Duration.To);
+                dto.StartDate >= av.Duration.From && dto.EndDate <= av.Duration.To);
             if (!isInAvailability)
-                throw new Exception("Requested period is outside of accommodation availability");
+                return Result.Fail<RequestDto>("Requested period is outside of accommodation availability");
 
-            // 3. Check if already have reservation
             bool hasConflict = await _repository.HasOverlappingAcceptedRequest(
-                request.AccommodationId,
-                request.StartDate,
-                request.EndDate);
-
+                dto.AccommodationId, dto.StartDate, dto.EndDate);
             if (hasConflict)
-                throw new InvalidOperationException("There is already an accepted request for this accommodation in the selected date range.");
+                return Result.Fail<RequestDto>("There is already an accepted request for this accommodation in the selected date range.");
 
-            // 4. Create a new request
-            if (accommodation.IsAutoReservation)
-                request.State = RequestState.ACCEPTED;
-            else
-                request.State = RequestState.PENDING;
-
+            var request = MapToDomain(dto);
+            request.State = accommodation.IsAutoReservation ? RequestState.ACCEPTED : RequestState.PENDING;
             request.IsDeleted = false;
 
             await _repository.Create(request);
             await _repository.SaveChanges();
 
-            return request;
+            return Result.Ok(_mapper.Map<RequestDto>(request));
         }
+        catch (Exception ex)
+        {
+            return Result.Fail<RequestDto>(ex.Message);
+        }
+    }
 
-        public async Task<bool> DeleteRequest(Guid requestId)
+    public async Task<Result> DeleteRequest(Guid requestId)
+    {
+        try
         {
             var request = await _repository.GetById(requestId);
             if (request == null || request.State != RequestState.PENDING)
-                return false;
+                return Result.Fail("Request not found or cannot be deleted");
 
             request.IsDeleted = true;
             await _repository.Update(request);
             await _repository.SaveChanges();
-            return true;
+            return Result.Ok();
         }
-
-        public async Task<IEnumerable<Request>> GetRequestsByUser(int userId)
+        catch (Exception ex)
         {
-            return await _repository.GetByUserId(userId);
+            return Result.Fail(ex.Message);
         }
+    }
 
-        public async Task<IEnumerable<Request>> GetByAccommodationAndUser(Guid accommodationId, int userId)
+    public async Task<Result<RequestDto>> GetRequestById(Guid requestId)
+    {
+        try
         {
-            return await _repository.GetByAccommodationAndUser(accommodationId, userId);
+            var requests = await _repository.GetById(requestId);
+            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok();
         }
-
-        public async Task<IEnumerable<Request>> GetRequestsByAccommodation(Guid accommodationId)
+        catch (Exception ex)
         {
-            return await _repository.GetByAccommodationId(accommodationId);
+            return Result.Fail(ex.Message);
         }
+    }
 
-        public async Task<Request> ApproveRequest(Guid requestId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetRequestsByUser(int userId)
+    {
+        try
+        {
+            var requests = await _repository.GetByUserId(userId);
+            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
+    }
+
+    public async Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndUser(Guid accommodationId, int userId)
+    {
+        try
+        {
+            var requests = await _repository.GetByAccommodationAndUser(accommodationId, userId);
+            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
+    }
+
+    public async Task<Result<IEnumerable<RequestDto>>> GetRequestsByAccommodation(Guid accommodationId)
+    {
+        try
+        {
+            var requests = await _repository.GetByAccommodationId(accommodationId);
+            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(dtos);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
+    }
+
+    public async Task<Result<RequestDto>> ApproveRequest(Guid requestId)
+    {
+        try
         {
             var request = await _repository.GetById(requestId);
             if (request == null || request.State != RequestState.PENDING)
-                throw new InvalidOperationException("Request not found or cannot be approved.");
+                return Result.Fail<RequestDto>("Request not found or cannot be approved");
 
-            // 1. Accept selected request
             request.State = RequestState.ACCEPTED;
             await _repository.Update(request);
 
-            // 2. Reject all overlapping requests
             var overlappingRequests = await _repository.GetOverlappingRequests(
-                request.AccommodationId,
-                request.StartDate,
-                request.EndDate,
-                request.Id
-            );
+                request.AccommodationId, request.StartDate, request.EndDate, request.Id);
 
             foreach (var r in overlappingRequests)
             {
@@ -119,45 +155,83 @@ namespace Booking.Application.UseCases
             }
 
             await _repository.SaveChanges();
-
-            return request;
+            return Result.Ok(_mapper.Map<RequestDto>(request));
         }
+        catch (Exception ex)
+        {
+            return Result.Fail<RequestDto>(ex.Message);
+        }
+    }
 
-        public async Task<Request> RejectRequest(Guid requestId)
+    public async Task<Result<RequestDto>> RejectRequest(Guid requestId)
+    {
+        try
         {
             var request = await _repository.GetById(requestId);
             if (request == null || request.State != RequestState.PENDING)
-                throw new InvalidOperationException("Request not found or cannot be rejected.");
+                return Result.Fail<RequestDto>("Request not found or cannot be rejected");
 
             request.State = RequestState.USER_REJECT;
             await _repository.Update(request);
             await _repository.SaveChanges();
 
-            return request;
+            return Result.Ok(_mapper.Map<RequestDto>(request));
         }
-
-        public async Task<IEnumerable<RequestWithCancelCountDto>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId)
+        catch (Exception ex)
         {
-            return await _repository.GetRequestsWithCancelCountByAccommodation(accommodationId);
+            return Result.Fail<RequestDto>(ex.Message);
         }
+    }
 
-        public async Task<IEnumerable<RequestDto>> GetAcceptedByAccommodationId(Guid accommodationId)
+    public async Task<Result<IEnumerable<RequestWithCancelCountDto>>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId)
+    {
+        try
+        {
+            var result = await _repository.GetRequestsWithCancelCountByAccommodation(accommodationId);
+            return Result.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestWithCancelCountDto>>(ex.Message);
+        }
+    }
+
+    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationId(Guid accommodationId)
+    {
+        try
         {
             var requests = await _repository.GetAcceptedByAccommodationId(accommodationId);
-            return _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
         }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
+    }
 
-        public async Task<IEnumerable<RequestDto>> GetAcceptedByUserId(int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByUserId(int userId)
+    {
+        try
         {
             var requests = await _repository.GetAcceptedByUserId(userId);
-            return _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
         }
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
+    }
 
-        public async Task<IEnumerable<RequestDto>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId)
+    {
+        try
         {
             var requests = await _repository.GetAcceptedByAccommodationAndUser(accommodationId, userId);
-            return _mapper.Map<IEnumerable<RequestDto>>(requests);
+            return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
         }
-
+        catch (Exception ex)
+        {
+            return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
+        }
     }
 }

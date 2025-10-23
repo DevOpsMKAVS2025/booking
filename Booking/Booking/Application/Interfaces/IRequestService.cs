@@ -8,17 +8,18 @@ namespace Booking.Application.Interfaces
 {
     public interface IRequestService
     {
-        public Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize);
-        Task<Request> CreateRequest(Request request);
-        Task<bool> DeleteRequest(Guid requestId);
-        Task<IEnumerable<Request>> GetRequestsByUser(int userId);
-        Task<IEnumerable<Request>> GetByAccommodationAndUser(Guid accommodationId, int userId);
-        Task<IEnumerable<Request>> GetRequestsByAccommodation(Guid accommodationId);
-        Task<Request> ApproveRequest(Guid requestId);
-        Task<Request> RejectRequest(Guid requestId);
-        Task<IEnumerable<RequestWithCancelCountDto>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId);
-        Task<IEnumerable<RequestDto>> GetAcceptedByAccommodationId(Guid accommodationId);
-        Task<IEnumerable<RequestDto>> GetAcceptedByUserId(int userId);
-        Task<IEnumerable<RequestDto>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId);
+        Task<Result<RequestDto>> CreateRequest(RequestDto dto);
+        Task<Result<RequestDto>> GetRequestById(Guid requestId);
+        Task<Result<IEnumerable<RequestDto>>> GetRequestsByUser(int userId);
+        Task<Result<IEnumerable<RequestDto>>> GetRequestsByAccommodation(Guid accommodationId);
+        Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndUser(Guid accommodationId, int userId);
+        Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize);
+        Task<Result> DeleteRequest(Guid requestId);
+        Task<Result<RequestDto>> ApproveRequest(Guid requestId);
+        Task<Result<RequestDto>> RejectRequest(Guid requestId);
+        Task<Result<IEnumerable<RequestWithCancelCountDto>>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId);
+        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationId(Guid accommodationId);
+        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByUserId(int userId);
+        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId);
     }
 }
