@@ -10,17 +10,17 @@ namespace Booking.Domain.Entities.RepositoryInterfaces
     {
         PagedResult<Request> GetPaged(int page, int pageSize);
         Task<Request?> GetById(Guid id);
-        Task<IEnumerable<Request>> GetByUserId(int userId);
+        Task<IEnumerable<Request>> GetByGuestId(Guid guestId);
         Task Create(Request request);
         Task Update(Request request);
         Task SaveChanges();
-        Task<IEnumerable<Request>> GetByAccommodationAndUser(Guid accommodationId, int userId);
+        Task<IEnumerable<Request>> GetByAccommodationAndGuest(Guid accommodationId, Guid guestId);
         Task<IEnumerable<Request>> GetByAccommodationId(Guid accommodationId);
         Task<IEnumerable<Request>> GetOverlappingRequests(Guid accommodationId, DateTime startDate, DateTime endDate, Guid excludeRequestId);
         Task<IEnumerable<RequestWithCancelCountDto>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId);
         Task<bool> HasOverlappingAcceptedRequest(Guid accommodationId, DateTime startDate, DateTime endDate);
         Task<IEnumerable<Request>> GetAcceptedByAccommodationId(Guid accommodationId);
-        Task<IEnumerable<Request>> GetAcceptedByUserId(int userId);
-        Task<IEnumerable<Request>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId);
+        Task<IEnumerable<Request>> GetAcceptedByGuestId(Guid guestId);
+        Task<IEnumerable<Request>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId);
     }
 }

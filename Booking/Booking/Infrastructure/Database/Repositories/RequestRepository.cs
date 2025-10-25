@@ -37,10 +37,10 @@ namespace Booking.Infrastructure.Repositories
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<IEnumerable<Request>> GetByUserId(int userId)
+        public async Task<IEnumerable<Request>> GetByGuestId(Guid guestId)
         {
             return await _dbSet
-                .Where(r => r.UserId == userId
+                .Where(r => r.GuestId == guestId
                     && r.State == RequestState.PENDING
                     && r.StartDate > DateTime.UtcNow
                     && !r.IsDeleted)
@@ -62,11 +62,11 @@ namespace Booking.Infrastructure.Repositories
             await DbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Request>> GetByAccommodationAndUser(Guid accommodationId, int userId)
+        public async Task<IEnumerable<Request>> GetByAccommodationAndGuest(Guid accommodationId, Guid guestId)
         {
             return await _dbSet
                 .Where(r => r.AccommodationId == accommodationId
-                    && r.UserId == userId
+                    && r.GuestId == guestId
                     && r.State == RequestState.PENDING
                     && r.StartDate > DateTime.UtcNow
                     && !r.IsDeleted)
@@ -107,13 +107,13 @@ namespace Booking.Infrastructure.Repositories
                 {
                     RequestId = r.Id,
                     AccommodationId = r.AccommodationId,
-                    UserId = r.UserId,
+                    GuestId = r.GuestId,
                     StartDate = r.StartDate,
                     EndDate = r.EndDate,
                     GuestNum = r.GuestNum,
                     State = r.State.ToString(),
                     PreviousCancellations = DbContext.Set<Request>()
-                        .Count(res => res.UserId == r.UserId && res.State == RequestState.USER_REJECT)
+                        .Count(res => res.GuestId == r.GuestId && res.State == RequestState.USER_REJECT)
                 })
                 .ToListAsync();
         }
@@ -137,21 +137,21 @@ namespace Booking.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Request>> GetAcceptedByUserId(int userId)
+        public async Task<IEnumerable<Request>> GetAcceptedByGuestId(Guid guestId)
         {
             return await _dbSet
-                .Where(r => r.UserId == userId
+                .Where(r => r.GuestId == guestId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
                             && r.StartDate >= DateTime.UtcNow)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Request>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId)
+        public async Task<IEnumerable<Request>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId)
         {
             return await _dbSet
                 .Where(r => r.AccommodationId == accommodationId
-                            && r.UserId == userId
+                            && r.GuestId == guestId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
                             && r.StartDate >= DateTime.UtcNow)

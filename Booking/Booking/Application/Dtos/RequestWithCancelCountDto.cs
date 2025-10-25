@@ -6,7 +6,7 @@ namespace Booking.Application.Dtos
     {
         public Guid RequestId { get; set; }
         public Guid AccommodationId { get; set; }
-        public int UserId { get; set; }
+        public Guid GuestId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int GuestNum { get; set; }

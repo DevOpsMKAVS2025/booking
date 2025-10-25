@@ -10,16 +10,16 @@ namespace Booking.Application.Interfaces
     {
         Task<Result<RequestDto>> CreateRequest(RequestDto dto);
         Task<Result<RequestDto>> GetRequestById(Guid requestId);
-        Task<Result<IEnumerable<RequestDto>>> GetRequestsByUser(int userId);
+        Task<Result<IEnumerable<RequestDto>>> GetRequestsByGuest(Guid guestId);
         Task<Result<IEnumerable<RequestDto>>> GetRequestsByAccommodation(Guid accommodationId);
-        Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndUser(Guid accommodationId, int userId);
+        Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndGuest(Guid accommodationId, Guid guestId);
         Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize);
         Task<Result> DeleteRequest(Guid requestId);
         Task<Result<RequestDto>> ApproveRequest(Guid requestId);
         Task<Result<RequestDto>> RejectRequest(Guid requestId);
         Task<Result<IEnumerable<RequestWithCancelCountDto>>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId);
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationId(Guid accommodationId);
-        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByUserId(int userId);
-        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId);
+        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByGuestId(Guid guestId);
+        Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId);
     }
 }

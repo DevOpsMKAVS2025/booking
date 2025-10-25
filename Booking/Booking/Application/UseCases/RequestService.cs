@@ -92,11 +92,11 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetRequestsByUser(int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetRequestsByGuest(Guid guestId)
     {
         try
         {
-            var requests = await _repository.GetByUserId(userId);
+            var requests = await _repository.GetByGuestId(guestId);
             var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
             return Result.Ok(dtos);
         }
@@ -106,11 +106,11 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndUser(Guid accommodationId, int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetByAccommodationAndGuest(Guid accommodationId, Guid guestId)
     {
         try
         {
-            var requests = await _repository.GetByAccommodationAndUser(accommodationId, userId);
+            var requests = await _repository.GetByAccommodationAndGuest(accommodationId, guestId);
             var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
             return Result.Ok(dtos);
         }
@@ -209,11 +209,11 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByUserId(int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByGuestId(Guid guestId)
     {
         try
         {
-            var requests = await _repository.GetAcceptedByUserId(userId);
+            var requests = await _repository.GetAcceptedByGuestId(guestId);
             return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
         }
         catch (Exception ex)
@@ -222,11 +222,11 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId)
     {
         try
         {
-            var requests = await _repository.GetAcceptedByAccommodationAndUser(accommodationId, userId);
+            var requests = await _repository.GetAcceptedByAccommodationAndGuest(accommodationId, guestId);
             return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
         }
         catch (Exception ex)

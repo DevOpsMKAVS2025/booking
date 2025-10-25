@@ -2,6 +2,7 @@ using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using FluentResults;
+using Booking.BuildingBlocks.Core.UseCases;
 
 namespace Booking.API.Controllers
 {
@@ -16,98 +17,94 @@ namespace Booking.API.Controllers
             _requestService = requestService;
         }
 
-        // ------------------ CREATE ------------------
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] RequestDto dto)
         {
-            var result = await _requestService.CreateRequest(dto); // Result<RequestDto>
+            Result<RequestDto> result = await _requestService.CreateRequest(dto);
             return CreateResponse(result);
         }
 
-        // ------------------ GET ------------------
         [HttpGet("{id}")]
         public async Task<ActionResult> GetById(Guid id)
         {
-            var result = await _requestService.GetRequestById(id); // Result<RequestDto>
+            Result<RequestDto> result = await _requestService.GetRequestById(id);
             return CreateResponse(result);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<ActionResult> GetByUser(int userId)
+        [HttpGet("guest/{guestId}")]
+        public async Task<ActionResult> GetByGuest(Guid guestId)
         {
-            var result = await _requestService.GetRequestsByUser(userId); // Result<IEnumerable<RequestDto>>
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetRequestsByGuest(guestId);
             return CreateResponse(result);
         }
 
         [HttpGet("accommodation/{accommodationId}")]
         public async Task<ActionResult> GetByAccommodation(Guid accommodationId)
         {
-            var result = await _requestService.GetRequestsByAccommodation(accommodationId); // Result<IEnumerable<RequestDto>>
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetRequestsByAccommodation(accommodationId);
             return CreateResponse(result);
         }
 
         [HttpGet("filter")]
-        public async Task<ActionResult> GetByAccommodationAndUser([FromQuery] Guid accommodationId, [FromQuery] int userId)
+        public async Task<ActionResult> GetByAccommodationAndGuest([FromQuery] Guid accommodationId, [FromQuery] Guid guestId)
         {
-            var result = await _requestService.GetByAccommodationAndUser(accommodationId, userId);
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetByAccommodationAndGuest(accommodationId, guestId);
             return CreateResponse(result);
         }
 
         [HttpGet("paged")]
         public ActionResult GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = _requestService.GetPaged(page, pageSize); // Result<PagedResult<RequestDto>>
+            Result<PagedResult<RequestDto>> result = _requestService.GetPaged(page, pageSize);
             return CreateResponse(result);
         }
 
-        // ------------------ APPROVE / REJECT ------------------
         [HttpPost("approve/{requestId}")]
         public async Task<ActionResult> Approve(Guid requestId)
         {
-            var result = await _requestService.ApproveRequest(requestId); // Result<RequestDto>
+            Result<RequestDto> result = await _requestService.ApproveRequest(requestId);
             return CreateResponse(result);
         }
 
         [HttpPost("reject/{requestId}")]
         public async Task<ActionResult> Reject(Guid requestId)
         {
-            var result = await _requestService.RejectRequest(requestId); // Result<RequestDto>
+            Result<RequestDto> result = await _requestService.RejectRequest(requestId);
             return CreateResponse(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
-            var result = await _requestService.DeleteRequest(id); // Result
+            Result<RequestDto> result = await _requestService.DeleteRequest(id);
             return CreateResponse(result);
         }
 
-        // ------------------ EXTRA ------------------
         [HttpGet("accommodation/{accommodationId}/with-cancel-count")]
         public async Task<ActionResult> GetWithCancelCount(Guid accommodationId)
         {
-            var result = await _requestService.GetRequestsWithCancelCountByAccommodation(accommodationId); // Result<IEnumerable<RequestWithCancelCountDto>>
+            Result<IEnumerable<RequestWithCancelCountDto>> result = await _requestService.GetRequestsWithCancelCountByAccommodation(accommodationId);
             return CreateResponse(result);
         }
 
         [HttpGet("accepted/accommodation/{accommodationId}")]
         public async Task<ActionResult> GetAcceptedByAccommodation(Guid accommodationId)
         {
-            var result = await _requestService.GetAcceptedByAccommodationId(accommodationId); // Result<IEnumerable<RequestDto>>
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetAcceptedByAccommodationId(accommodationId);
             return CreateResponse(result);
         }
 
-        [HttpGet("accepted/user/{userId}")]
-        public async Task<ActionResult> GetAcceptedByUser(int userId)
+        [HttpGet("accepted/guest/{guestId}")]
+        public async Task<ActionResult> GetAcceptedByGuest(Guid guestId)
         {
-            var result = await _requestService.GetAcceptedByUserId(userId); // Result<IEnumerable<RequestDto>>
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetAcceptedByGuestId(guestId);
             return CreateResponse(result);
         }
 
-        [HttpGet("accepted/accommodation/{accommodationId}/user/{userId}")]
-        public async Task<ActionResult> GetAcceptedByAccommodationAndUser(Guid accommodationId, int userId)
+        [HttpGet("accepted/accommodation/{accommodationId}/guest/{guestId}")]
+        public async Task<ActionResult> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId)
         {
-            var result = await _requestService.GetAcceptedByAccommodationAndUser(accommodationId, userId); // Result<IEnumerable<RequestDto>>
+            Result<IEnumerable<RequestDto>> result = await _requestService.GetAcceptedByAccommodationAndGuest(accommodationId, guestId);
             return CreateResponse(result);
         }
     }
