@@ -30,7 +30,7 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Accommodation Get(Guid id)
         {
-            var entity = _dbSet.Find(id);
+            Accommodation entity = _dbSet.Find(id);
             if (entity == null) throw new KeyNotFoundException("Not found: " + id);
             return entity;
         }
@@ -58,14 +58,14 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public void Delete(Guid id)
         {
-            var entity = Get(id);
+            Accommodation entity = Get(id);
             _dbSet.Remove(entity);
             DbContext.SaveChanges();
         }
 
         public Price CreatePrice(Price price)
         {
-            var accommodation = Get(price.AccommodationId);
+            Accommodation accommodation = Get(price.AccommodationId);
             accommodation.Prices.Add(price);
             Update(accommodation);
             return price;
@@ -73,8 +73,8 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Price UpdatePrice(Price price)
         {
-            var oldPrice = GetPrice(price.AccommodationId, price.Id);
-            var accommodation = Get(price.AccommodationId);
+            Price oldPrice = GetPrice(price.AccommodationId, price.Id);
+            Accommodation accommodation = Get(price.AccommodationId);
             accommodation.Prices.Remove(oldPrice);
             accommodation.Prices.Add(price);
             Update(accommodation);
@@ -83,14 +83,13 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Price GetPrice(Guid accommodationId, Guid priceId)
         {
-            var accommodation = Get(accommodationId);
-            var price = accommodation.Prices.Find(x=> x.Id == priceId);  
-            return price;
+            Accommodation accommodation = Get(accommodationId);
+            return accommodation.Prices.Find(x=> x.Id == priceId);  
         }
 
         public Availability CreateAvailability(Availability availability)
         {
-            var accommodation = Get(availability.AccommodationId);
+            Accommodation accommodation = Get(availability.AccommodationId);
             accommodation.Availability.Add(availability);
             Update(accommodation);
             return availability;
@@ -98,8 +97,8 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Availability UpdateAvailability(Availability availability)
         {
-            var oldAvailability = GetAvailability(availability.AccommodationId, availability.Id);
-            var accommodation = Get(availability.AccommodationId);
+            Availability oldAvailability = GetAvailability(availability.AccommodationId, availability.Id);
+            Accommodation accommodation = Get(availability.AccommodationId);
             accommodation.Availability.Remove(oldAvailability);
             accommodation.Availability.Add(availability);
             Update(accommodation);
@@ -108,9 +107,13 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public Availability GetAvailability(Guid accommodationId, Guid availabilityId)
         {
-            var accommodation = Get(accommodationId);
-            var availability = accommodation.Availability.Find(x=>x.Id==availabilityId);
-            return availability;
+            Accommodation accommodation = Get(accommodationId);
+            return accommodation.Availability.Find(x => x.Id == availabilityId);
+        }
+
+        public List<Accommodation> GetByOwnerId(Guid id)
+        {
+            return _dbSet.Where(x => x.OwnerId==id).ToList();
         }
     }
 }

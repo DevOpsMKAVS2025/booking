@@ -51,6 +51,9 @@ namespace Booking.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.PrimitiveCollection<List<string>>("Photos")
                         .IsRequired()
                         .HasColumnType("text[]");

@@ -14,5 +14,6 @@ namespace Booking.Application.Dtos
         public List<AvailabilityDto> Availability { get; set; }
         public List<PriceDto> Prices { get; set; }
         public decimal GlobalPrice { get; set; }
+        public Guid OwnerId { get; set; }
     }
 }

@@ -203,6 +203,20 @@ namespace Booking.Application.UseCases
 
             return new PagedResult<AccommodationAndPriceDto>(accommodationAndPriceDtos, accommodationAndPriceDtos.Count);
         }
+
+        public Result<List<AccommodationDto>> GetByOwnerId(Guid id)
+        {
+            try
+            {
+                List<Accommodation> accommodations = _repository.GetByOwnerId(id);
+                return Result.Ok(_mapper.Map<List<AccommodationDto>>(accommodations));
+            }
+            catch (ArgumentException e)
+            {
+                return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
+            }
+        }
+
         private decimal CalculateTotalPrice( Accommodation accommodation, DateTime fromDate, DateTime toDate, int guestCount)
         {
             decimal total = 0m;
@@ -249,6 +263,14 @@ namespace Booking.Application.UseCases
 
             var merged = new List<DateRange>();
             var current = sorted[0].Duration;
+            if(sorted.Count == 1)
+            {
+                merged.Add(current);
+                return merged.Any(range =>
+                    range.From.Date <= fromDate.Date && range.To.Date >= toDate.Date
+                );
+            }
+            
 
             for (int i = 1; i < sorted.Count; i++)
             {
