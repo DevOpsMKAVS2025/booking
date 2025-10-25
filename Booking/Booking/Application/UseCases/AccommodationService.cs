@@ -224,7 +224,7 @@ namespace Booking.Application.UseCases
             for (var date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
             {
                 var priceForDay = accommodation.Prices
-                    ?.FirstOrDefault(p => p.Duration.From <= date && p.Duration.To >= date);
+                    ?.FirstOrDefault(p => p.Duration.From.Date <= date.Date && p.Duration.To.Date >= date.Date);
 
                 decimal dayPrice;
 
