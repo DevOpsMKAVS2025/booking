@@ -8,6 +8,8 @@ namespace Booking.Infrastructure.Database
         public BookingDbContext(DbContextOptions<BookingDbContext> options) : base(options) { }
 
         public DbSet<Accommodation> Accommodations { get; set; }
+        public DbSet<Request> Requests { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("booking"); 
@@ -28,6 +30,18 @@ namespace Booking.Infrastructure.Database
                     p.OwnsOne(x => x.Duration);
                 });
 
+            modelBuilder.Entity<Request>(entity =>
+            {
+                entity.ToTable("Requests");
+
+                entity.HasOne(r => r.Accommodation)
+                      .WithMany()
+                      .HasForeignKey(r => r.AccommodationId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(r => r.State)
+                      .HasConversion<string>();
+            });
         }
     }
 }
