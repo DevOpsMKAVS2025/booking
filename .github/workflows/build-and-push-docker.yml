@@ -15,6 +15,10 @@ on:
         description: "Path to the directory containing Dockerfile"
         required: true
         type: string
+      semantic-version:
+        description: "Docker semantic version tag"
+        required: true
+        type: string
 
 jobs:
   build-and-push:
@@ -33,11 +37,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          echo "Current working directory:"
-          pwd
-
-          echo "Listing all files in the repo root:"
-          ls -R
-          
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.repository-name }}:${{ inputs.image-tag }} ${{ inputs.local-path }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.repository-name }}:${{ inputs.image-tag }}
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.repository-name }}:${{ inputs.semantic-version }} ${{ inputs.local-path }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.repository-name }}:${{ inputs.semantic-version }}
