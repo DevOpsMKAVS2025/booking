@@ -2,8 +2,6 @@ using Booking.BuildingBlocks.Core;
 
 namespace Booking.Domain.Entities
 {
-    namespace Booking.Domain.Entities
-    {
         public class Request : Entity
         {
             public Guid AccommodationId { get; set; }
@@ -23,6 +21,4 @@ namespace Booking.Domain.Entities
             AUTO_REJECT,
             USER_REJECT
         }
-    }
-
 }

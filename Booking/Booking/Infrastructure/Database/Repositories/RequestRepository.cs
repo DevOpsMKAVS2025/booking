@@ -2,7 +2,6 @@ using Booking.Application.Dtos;
 using Booking.BuildingBlocks.Core.UseCases;
 using Booking.BuildingBlocks.Infrastructure;
 using Booking.Domain.Entities;
-using Booking.Domain.Entities.Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using Booking.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;

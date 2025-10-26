@@ -1,7 +1,7 @@
 using Booking.BuildingBlocks.Core.UseCases;
 using Booking.BuildingBlocks.Core;
 using FluentResults;
-using Booking.Domain.Entities.Booking.Domain.Entities;
+using Booking.Domain.Entities;
 using Booking.Application.Dtos;
 
 namespace Booking.Domain.Entities.RepositoryInterfaces

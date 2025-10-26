@@ -1,7 +1,6 @@
 using Booking.Application.Dtos;
 using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
-using Booking.Domain.Entities.Booking.Domain.Entities;
 using FluentResults;
 
 namespace Booking.Application.Interfaces

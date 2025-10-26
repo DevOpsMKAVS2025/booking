@@ -2,7 +2,7 @@ using AutoMapper;
 using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
 using Booking.BuildingBlocks.Core.UseCases;
-using Booking.Domain.Entities.Booking.Domain.Entities;
+using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentResults;
 
@@ -82,9 +82,9 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
     {
         try
         {
-            var requests = await _repository.GetById(requestId);
-            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
-            return Result.Ok();
+            var request = await _repository.GetById(requestId);
+            RequestDto dto = _mapper.Map<RequestDto>(request);
+            return Result.Ok(dto);
         }
         catch (Exception ex)
         {
