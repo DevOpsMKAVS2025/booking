@@ -3,7 +3,8 @@ name: Build and Push .NET App
 on:
   push:
     branches:
-      feature/cicd
+      - main
+      - develop
   pull_request:
     branches:
       - main
