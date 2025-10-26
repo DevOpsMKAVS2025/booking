@@ -320,5 +320,10 @@ namespace Booking.Application.UseCases
         {
             return _repository.GetAll();
         }
+        
+        public async Task DeleteAccommodationsForOwner(Guid ownerId)
+        {
+            await _repository.DeleteAccommodationsByOwnerId(ownerId);
+        }
     }
 }

@@ -22,5 +22,6 @@ namespace Booking.Application.Interfaces
         public Result<AccommodationDto> ToggleAutoReservation(Guid accommodationId);
         public Result<List<AccommodationDto>> GetByOwnerId(Guid id);
         public List<Accommodation> GetAll();
+        Task DeleteAccommodationsForOwner(Guid ownerId);
     }
 }
