@@ -1,0 +1,41 @@
+name: Build and Push .NET App
+
+on:
+  push:
+    branches:
+      feature/cicd
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/dotnet-build-and-test.yml
+  prepare-tag:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.extract_tag.outputs.TAG }}
+    steps:
+      - name: Get commit hash
+        id: extract_tag
+        run: |
+          echo "Tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+  build-and-push:
+    needs: prepare-tag
+    uses: ./.github/workflows/build-and-push-docker.yml
+    with:
+      repository-name: uks-backend
+      image-tag: ${{ needs.prepare-tag.outputs.tag }}
+      local-path: ./DockerHubBackend/DockerHubBackend
+    secrets: inherit
