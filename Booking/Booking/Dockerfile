@@ -17,6 +17,6 @@ RUN mkdir -p /app/../../../Logs
 
 EXPOSE 5156
 
-ENTRYPOINT ["dotnet", "DockerHubBackend.dll"]
+ENTRYPOINT ["dotnet", "Booking.dll"]
 
 
