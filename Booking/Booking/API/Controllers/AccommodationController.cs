@@ -101,6 +101,13 @@ namespace Booking.API.Controllers
             return Ok(result);
         }
 
+        [HttpPut("toggle/{id}")]
+        public IActionResult ToggleAutoReservation(Guid id)
+        {
+            var result = _accommodationService.ToggleAutoReservation(id);
+            return CreateResponse(result);
+        }
+
         [HttpGet("owner/{ownerId}")]
         public IActionResult GetByOwnerId(Guid ownerId)
         {
