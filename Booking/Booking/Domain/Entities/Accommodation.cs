@@ -1,17 +1,22 @@
-﻿namespace Booking.Domain.Entities
+﻿using Booking.BuildingBlocks.Core;
+
+namespace Booking.Domain.Entities
 {
-    public class Accommodation
+    public class Accommodation : Entity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
-        public CONVENIENCE_TYPE Convenience {  get; set; }
+        public List<ConvenieceType> Conveniences {  get; set; }
         public List<string> Photos { get; set; }
         public int MinGuestNumber { get; set; }
         public int MaxGuestNumber { get; set; }
+        public List<Availability> Availability { get; set; }
+        public List<Price> Prices { get; set; }
+        public decimal GlobalPrice { get; set; }
+        public Guid OwnerId { get; set; }
     }
 
-    public enum CONVENIENCE_TYPE
+    public enum ConvenieceType
     {
         WIFI,
         KITCHEN,
