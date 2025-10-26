@@ -23,5 +23,6 @@ namespace Booking.Application.Interfaces
         List<Request> GetAllByGuestId(Guid guestId);
         List<Request> GetAllByAccommodationId(Guid accommodationId);
         List<Request> GetAllByHostId(Guid hostId);
+        Task<bool> hasReservations(Guid userId, bool isOwner);
     }
 }

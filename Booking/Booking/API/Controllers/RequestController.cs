@@ -107,5 +107,12 @@ namespace Booking.API.Controllers
             Result<IEnumerable<RequestDto>> result = await _requestService.GetAcceptedByAccommodationAndGuest(accommodationId, guestId);
             return CreateResponse(result);
         }
+
+        [HttpGet("user/{userId}/has-reservations")]
+        public async Task<ActionResult> HasReservationsOwner(Guid userId, [FromQuery] bool isOwner)
+        {
+            var result = await _requestService.hasReservations(userId, isOwner);
+            return Ok(result);
+        }
     }
 }

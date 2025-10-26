@@ -180,5 +180,19 @@ namespace Booking.Infrastructure.Repositories
                 .Where(r => r.Accommodation.OwnerId == hostId && !r.IsDeleted)
                 .ToList();
         }
+        
+        public async Task<bool> hasReservationsOwner(Guid ownerId)
+        {
+            return await _dbSet
+                .Where(r => r.Accommodation.OwnerId == ownerId)
+                .CountAsync() > 0;
+        }
+
+        public async Task<bool> hasReservationsGuest(Guid guestId)
+        {
+            return await _dbSet
+                .Where(r => r.GuestId == guestId)
+                .CountAsync() > 0;
+        }
     }
 }
