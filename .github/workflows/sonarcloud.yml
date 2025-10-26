@@ -8,7 +8,7 @@ on:
     branches:
       - main
       - develop
-
+  
 jobs:
   sonarcloud:
     name: Analyze with SonarCloud
@@ -23,7 +23,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x  # Adjust if your project uses a different version
+          dotnet-version: 8.0.x
 
       - name: Restore dependencies
         run: dotnet restore ./Booking/Booking.sln
@@ -35,9 +35,8 @@ jobs:
         run: dotnet test ./Booking/Booking.sln --no-build --verbosity normal
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v3
+        uses: SonarSource/sonarcloud-github-action@v3
         with:
           projectBaseDir: ./Booking
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to fetch PR metadata
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
