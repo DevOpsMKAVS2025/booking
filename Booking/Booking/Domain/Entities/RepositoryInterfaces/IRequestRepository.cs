@@ -22,5 +22,8 @@ namespace Booking.Domain.Entities.RepositoryInterfaces
         Task<IEnumerable<Request>> GetAcceptedByAccommodationId(Guid accommodationId);
         Task<IEnumerable<Request>> GetAcceptedByGuestId(Guid guestId);
         Task<IEnumerable<Request>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId);
+        List<Request> GetAllByGuestId(Guid guestId);
+        List<Request> GetAllByAccommodationId(Guid accommodationId);
+        List<Request> GetAllByHostId(Guid hostId);
     }
 }
