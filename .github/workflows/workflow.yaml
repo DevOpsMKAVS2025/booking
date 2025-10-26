@@ -48,5 +48,5 @@ jobs:
       repository-name: devops-booking
       image-tag: ${{ needs.prepare-tag.outputs.tag }}
       local-path: ./Booking/Booking
-      semantic_version: ${{ needs.prepare-tag.outputs.semantic_tag }}
+      semantic-version: ${{ needs.prepare-tag.outputs.semantic_tag }}
     secrets: inherit
