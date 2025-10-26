@@ -4,6 +4,17 @@ using Booking;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CORS_CONFIG", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") // URL tvoje Angular app
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.ConfigureBooking();
 builder.Services.AddEndpointsApiExplorer();
@@ -37,5 +48,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseCors("CORS_CONFIG");
 
 app.Run();
