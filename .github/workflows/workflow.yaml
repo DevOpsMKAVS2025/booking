@@ -37,5 +37,5 @@ jobs:
     with:
       repository-name: devops-booking
       image-tag: ${{ needs.prepare-tag.outputs.tag }}
-      local-path: ./DockerHubBackend/DockerHubBackend
+      local-path: ./Booking
     secrets: inherit
