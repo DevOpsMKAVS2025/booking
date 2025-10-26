@@ -115,5 +115,10 @@ namespace Booking.Infrastructure.Database.Repositories
         {
             return _dbSet.Where(x => x.OwnerId==id).ToList();
         }
+
+        public List<Accommodation> GetAll()
+        {
+            return _dbSet.ToList();
+        }
     }
 }

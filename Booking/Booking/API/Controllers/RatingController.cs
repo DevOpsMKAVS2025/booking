@@ -11,12 +11,14 @@ namespace Booking.API.Controllers
         private readonly IRatingService _ratingService;
         private readonly IAccommodationService _accommodationService;
         private readonly IRequestService _requestService;
+        private readonly IUserService _userService;
 
-        public RatingController(IRatingService ratingService, IAccommodationService accommodationService, IRequestService requestService)
+        public RatingController(IRatingService ratingService, IAccommodationService accommodationService, IRequestService requestService, IUserService userService)
         {
             _ratingService = ratingService;
             _accommodationService = accommodationService;
             _requestService = requestService;
+            _userService = userService;
         }
 
         [HttpPost]
@@ -109,6 +111,82 @@ namespace Booking.API.Controllers
         {
             var averageRating = _ratingService.GetAverageRatingForHost(hostId);
             return Ok(averageRating);
+        }
+
+        [HttpGet]
+        public IActionResult GetRatings(Guid guestId)
+        {
+            var accommodations = _accommodationService.GetAll();
+
+            var accommodationRatings = new List<AccommodationWithRatingsDto>();
+            var hostRatings = new List<HostWithRatingsDto>();
+
+            foreach (var acc in accommodations)
+            {
+                var accRatings = _ratingService.GetRatingsForAccommodation(acc.Id);
+                var accAverage = _ratingService.GetAverageRatingForAccommodation(acc.Id).ToString("F2");
+                accommodationRatings.Add(new AccommodationWithRatingsDto
+                {
+                    AccommodationId = acc.Id.ToString(),
+                    AccommodationName = acc.Name,
+                    Average = accAverage,
+                    Ratings = accRatings
+                });
+
+                if (!hostRatings.Any(h => h.HostId == acc.OwnerId.ToString()))
+                {
+                    var hRatings = _ratingService.GetRatingsForHost(acc.OwnerId);
+                    var hAverage = _ratingService.GetAverageRatingForHost(acc.OwnerId).ToString("F2");
+                    hostRatings.Add(new HostWithRatingsDto
+                    {
+                        HostId = acc.OwnerId.ToString(),
+                        HostUsername = _userService.Get(acc.OwnerId).Username,
+                        Average = hAverage,
+                        Ratings = hRatings
+                    });
+                }
+            }
+
+            var result = new AccAndHostsWithRatingsDto
+            {
+                Accommodations = accommodationRatings,
+                Hosts = hostRatings
+            };
+            return Ok(result);
+        }
+
+        [HttpGet("canRate/{guestId}")]
+        public IActionResult CanRate(Guid guestId)
+        {
+            var requests = _requestService.GetAllByGuestId(guestId);
+            var result = new CanRateDto
+            {
+                Accommodations = new List<string>(),
+                Hosts = new List<string>()
+            };
+
+            foreach (var r in requests)
+            {
+                if (r.GuestId != guestId) continue;
+
+                if (r.State == RequestState.ACCEPTED && r.EndDate <= DateTime.UtcNow)
+                {
+                    if (!result.Accommodations.Contains(r.AccommodationId.ToString()))
+                    {
+                        result.Accommodations.Add(r.AccommodationId.ToString());
+                    }
+                }
+
+                if (r.State != RequestState.USER_REJECT)
+                {
+                    if (!result.Hosts.Contains(r.Accommodation.OwnerId.ToString()))
+                    {
+                        result.Hosts.Add(r.Accommodation.OwnerId.ToString());
+                    }
+                }
+            }
+
+            return Ok(result);
         }
     }
 }
