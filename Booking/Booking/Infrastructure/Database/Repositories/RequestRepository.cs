@@ -39,6 +39,7 @@ namespace Booking.Infrastructure.Repositories
         public async Task<IEnumerable<Request>> GetByGuestId(Guid guestId)
         {
             return await _dbSet
+                .Include(r => r.Accommodation)
                 .Where(r => r.GuestId == guestId
                     && r.State == RequestState.PENDING
                     && r.StartDate > DateTime.UtcNow
@@ -129,6 +130,7 @@ namespace Booking.Infrastructure.Repositories
         public async Task<IEnumerable<Request>> GetAcceptedByAccommodationId(Guid accommodationId)
         {
             return await _dbSet
+                .Include(r => r.Accommodation)
                 .Where(r => r.AccommodationId == accommodationId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
@@ -139,6 +141,7 @@ namespace Booking.Infrastructure.Repositories
         public async Task<IEnumerable<Request>> GetAcceptedByGuestId(Guid guestId)
         {
             return await _dbSet
+                .Include(r => r.Accommodation)
                 .Where(r => r.GuestId == guestId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted

@@ -34,6 +34,10 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             if (accommodation == null)
                 return Result.Fail<RequestDto>("Accommodation not found");
 
+            if (dto.GuestNum < accommodation.MinGuestNumber || dto.GuestNum > accommodation.MaxGuestNumber)
+                return Result.Fail<RequestDto>(
+                    $"Number of guests ({dto.GuestNum}) must be between {accommodation.MinGuestNumber} and {accommodation.MaxGuestNumber}.");
+
             bool isInAvailability = accommodation.Availability.Any(av =>
                 dto.StartDate >= av.Duration.From && dto.EndDate <= av.Duration.To);
             if (!isInAvailability)
@@ -163,13 +167,13 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         }
     }
 
-    public async Task<Result<RequestDto>> RejectRequest(Guid requestId)
+    public async Task<Result<RequestDto>> RejectReservation(Guid requestId)
     {
         try
         {
             var request = await _repository.GetById(requestId);
-            if (request == null || request.State != RequestState.PENDING)
-                return Result.Fail<RequestDto>("Request not found or cannot be rejected");
+            if (request == null || request.State != RequestState.ACCEPTED)
+                return Result.Fail<RequestDto>("Reservation not found or cannot be rejected");
 
             request.State = RequestState.USER_REJECT;
             await _repository.Update(request);

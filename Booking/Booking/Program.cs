@@ -11,12 +11,21 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Version = "v1",       
+        Version = "v1",
         Title = "Booking API"
     });
 });
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CORS_CONFIG",
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                      });
+});
 
 var app = builder.Build();
 
@@ -30,7 +39,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-
+app.UseCors("CORS_CONFIG");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
