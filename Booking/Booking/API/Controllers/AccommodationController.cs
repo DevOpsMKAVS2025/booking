@@ -108,5 +108,11 @@ namespace Booking.API.Controllers
             return CreateResponse(result);
         }
 
+        [HttpGet("owner/{ownerId}")]
+        public IActionResult GetByOwnerId(Guid ownerId)
+        {
+            var accommodations = _accommodationService.GetByOwnerId(ownerId);
+            return CreateResponse(accommodations);
+        }
     }
 }

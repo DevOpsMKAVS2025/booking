@@ -17,6 +17,7 @@ namespace Booking.Domain.Entities.RepositoryInterfaces
         public Availability CreateAvailability(Availability availability);
         public Availability UpdateAvailability(Availability availability);
         public Availability GetAvailability(Guid accommodationId, Guid availabilityId);
+        public List<Accommodation> GetByOwnerId(Guid id);
 
     }
 }
