@@ -17,6 +17,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AuthDBContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDBString")));
 
 var app = builder.Build();
 
