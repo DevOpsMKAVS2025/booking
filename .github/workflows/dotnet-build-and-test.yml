@@ -51,7 +51,7 @@ jobs:
       run: dotnet restore ./Booking
 
     - name: Restore dependencies for test project
-      run: dotnet restore ./Booking.Tests
+      run: dotnet restore ./Booking/Booking.Tests
 
     - name: Build default project
       run: dotnet build ./Booking --no-restore
