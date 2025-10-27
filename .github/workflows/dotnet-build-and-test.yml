@@ -42,14 +42,14 @@ jobs:
         PGPASSWORD: admin
       run: |
         echo "Creating booking-test-database..."
-        psql -h localhost -U admin -d postgres -c "CREATE DATABASE \"booking-test-database\";"
+        psql -h localhost -U postgres -d postgres -c "CREATE DATABASE \"booking-test-database\";"
         echo "Cloning booking-database to booking-test-database..."
-        pg_dump -h localhost -U admin -d booking-database | psql -h localhost -U admin -d booking-test-database
+        pg_dump -h localhost -U postgres -d booking-database | psql -h localhost -U postgres -d booking-test-database
 
         echo "Creating auth-test-database..."
-        psql -h localhost -U admin -d postgres -c "CREATE DATABASE \"auth-test-database\";"
+        psql -h localhost -U postgres -d postgres -c "CREATE DATABASE \"auth-test-database\";"
         echo "Cloning auth-database to auth-test-database..."
-        pg_dump -h localhost -U admin -d auth-database | psql -h localhost -U admin -d auth-test-database
+        pg_dump -h localhost -U postgres -d auth-database | psql -h localhost -U postgres -d auth-test-database
 
     - name: Restore dependencies for default project
       run: dotnet restore ./Booking
