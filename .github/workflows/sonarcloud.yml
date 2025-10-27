@@ -32,7 +32,7 @@ jobs:
         run: dotnet build ./Booking/Booking.sln --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test ./Booking/Booking.sln --no-build --verbosity normal
+        run: dotnet test ./Booking/Booking.sln --verbosity normal
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
