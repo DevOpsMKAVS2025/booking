@@ -1,0 +1,42 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - feature/sonarcloud
+  pull_request:
+    branches:
+      - main
+      - develop
+  
+jobs:
+  sonarcloud:
+    name: Analyze with SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarCloud to get full git history
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ./Booking/Booking.sln
+
+      - name: Build solution
+        run: dotnet build ./Booking/Booking.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test ./Booking/Booking.sln --no-build --verbosity normal
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: ./Booking
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
