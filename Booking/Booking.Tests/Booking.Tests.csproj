@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="IntegrationTests\" />
+    <ProjectReference Include="..\Booking\Booking.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Booking\Booking.csproj" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
