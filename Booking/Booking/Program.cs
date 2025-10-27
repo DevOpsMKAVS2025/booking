@@ -27,6 +27,13 @@ builder.Services.AddCors(options =>
                       });
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "Booking_";
+});
+
+
 var app = builder.Build();
 
 

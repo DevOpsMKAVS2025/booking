@@ -5,17 +5,21 @@ using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentResults;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 public class RequestService : BaseService<RequestDto, Request>, IRequestService
 {
     private readonly IMapper _mapper;
+    private readonly IDistributedCache _cache;
     private readonly IRequestRepository _repository;
     private readonly IAccommodationRepository _accommodationRepository;
 
-    public RequestService(IMapper mapper, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository)
+    public RequestService(IMapper mapper, IDistributedCache cache, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository)
         : base(mapper)
     {
         _mapper = mapper;
+        _cache = cache;
         _repository = requestRepository;
         _accommodationRepository = accommodationRepository;
     }
@@ -55,6 +59,8 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             await _repository.Create(request);
             await _repository.SaveChanges();
 
+            await _cache.RemoveAsync($"accepted_requests_{dto.AccommodationId}");
+
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
         catch (Exception ex)
@@ -74,6 +80,9 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             request.IsDeleted = true;
             await _repository.Update(request);
             await _repository.SaveChanges();
+
+            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
+
             return Result.Ok();
         }
         catch (Exception ex)
@@ -159,6 +168,9 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             }
 
             await _repository.SaveChanges();
+
+            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
+
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
         catch (Exception ex)
@@ -178,6 +190,8 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             request.State = RequestState.USER_REJECT;
             await _repository.Update(request);
             await _repository.SaveChanges();
+
+            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
 
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
@@ -204,8 +218,26 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
     {
         try
         {
+            var cacheKey = $"accepted_requests_{accommodationId}";
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+
+            if (cachedData != null)
+            {
+                var cachedRequests = JsonSerializer.Deserialize<IEnumerable<RequestDto>>(cachedData);
+                return Result.Ok(cachedRequests);
+            }
+
             var requests = await _repository.GetAcceptedByAccommodationId(accommodationId);
-            return Result.Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
+            var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            };
+
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dtos), options);
+
+            return Result.Ok(dtos);
         }
         catch (Exception ex)
         {
