@@ -14,6 +14,7 @@ namespace Booking.Domain.Entities
         public List<Price> Prices { get; set; }
         public decimal GlobalPrice { get; set; }
         public bool IsAutoReservation { get; set; } = false;
+        public PriceType PriceType { get; set; }
         public Guid OwnerId { get; set; }
     }
 
@@ -23,5 +24,10 @@ namespace Booking.Domain.Entities
         KITCHEN,
         AIR_CONDITION,
         FREE_PARKING
+    }
+    public enum PriceType
+    {
+        PER_GUEST,
+        PER_UNIT
     }
 }

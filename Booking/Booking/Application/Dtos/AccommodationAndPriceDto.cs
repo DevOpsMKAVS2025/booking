@@ -14,8 +14,9 @@ namespace Booking.Application.Dtos
         public decimal TotalPrice { get; set; }
         public bool IsAutoReservation { get; set; }
         public decimal PricePerPersonOrNight { get; set; }
+        public PriceType PriceType { get; set; }
 
-        public AccommodationAndPriceDto(Guid id, string name, string location, List<ConvenieceType> conveniences, List<string> photos, int minGuestNumber, int maxGuestNumber, decimal totalPrice, decimal pricePerPersonOrNight)
+        public AccommodationAndPriceDto(Guid id, string name, string location, List<ConvenieceType> conveniences, List<string> photos, int minGuestNumber, int maxGuestNumber, decimal totalPrice, decimal pricePerPersonOrNight, PriceType priceType)
         {
             Id = id;
             Name = name;
@@ -26,6 +27,7 @@ namespace Booking.Application.Dtos
             MaxGuestNumber = maxGuestNumber;
             TotalPrice = totalPrice;
             PricePerPersonOrNight = pricePerPersonOrNight;
+            PriceType = priceType;
         }
     }
 }

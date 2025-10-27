@@ -16,5 +16,6 @@ namespace Booking.Application.Dtos
         public decimal GlobalPrice { get; set; }
         public bool IsAutoReservation { get; set; }
         public Guid OwnerId { get; set; }
+        public PriceType PriceType { get; set; }
     }
 }
