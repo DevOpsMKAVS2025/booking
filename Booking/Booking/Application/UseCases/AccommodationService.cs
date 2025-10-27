@@ -346,5 +346,10 @@ namespace Booking.Application.UseCases
                 return Result.Fail(FailureCode.InvalidArgument).WithError(e.Message);
             }
         }
+
+        public List<Accommodation> GetAll()
+        {
+            return _repository.GetAll();
+        }
     }
 }

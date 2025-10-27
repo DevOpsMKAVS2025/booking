@@ -270,4 +270,19 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             return Result.Fail<IEnumerable<RequestDto>>(ex.Message);
         }
     }
+
+    public List<Request> GetAllByGuestId(Guid guestId)
+    {
+        return _repository.GetAllByGuestId(guestId);
+    }
+
+    public List<Request> GetAllByAccommodationId(Guid accommodationId)
+    {
+        return _repository.GetAllByAccommodationId(accommodationId);
+    }
+
+    public List<Request> GetAllByHostId(Guid hostId)
+    {
+        return _repository.GetAllByHostId(hostId);
+    }
 }
