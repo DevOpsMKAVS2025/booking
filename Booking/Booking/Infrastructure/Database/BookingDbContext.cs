@@ -9,6 +9,7 @@ namespace Booking.Infrastructure.Database
 
         public DbSet<Accommodation> Accommodations { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +42,11 @@ namespace Booking.Infrastructure.Database
 
                 entity.Property(r => r.State)
                       .HasConversion<string>();
+            });
+
+            modelBuilder.Entity<Rating>(entity =>
+            {
+                entity.ToTable("Ratings");
             });
         }
     }

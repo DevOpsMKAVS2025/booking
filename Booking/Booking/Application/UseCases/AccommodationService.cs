@@ -316,6 +316,9 @@ namespace Booking.Application.UseCases
             }
         }
 
-
+        public List<Accommodation> GetAll()
+        {
+            return _repository.GetAll();
+        }
     }
 }

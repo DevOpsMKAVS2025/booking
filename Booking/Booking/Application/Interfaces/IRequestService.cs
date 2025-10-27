@@ -20,5 +20,8 @@ namespace Booking.Application.Interfaces
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationId(Guid accommodationId);
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByGuestId(Guid guestId);
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationAndGuest(Guid accommodationId, Guid guestId);
+        List<Request> GetAllByGuestId(Guid guestId);
+        List<Request> GetAllByAccommodationId(Guid accommodationId);
+        List<Request> GetAllByHostId(Guid hostId);
     }
 }

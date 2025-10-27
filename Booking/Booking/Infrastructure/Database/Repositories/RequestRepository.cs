@@ -157,5 +157,28 @@ namespace Booking.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public List<Request> GetAllByGuestId(Guid guestId)
+        {
+            return _dbSet
+                .Include(r => r.Accommodation)
+                .Where(r => r.GuestId == guestId && !r.IsDeleted)
+                .ToList();
+        }
+
+        public List<Request> GetAllByAccommodationId(Guid accommodationId)
+        {
+            return _dbSet
+                .Include(r => r.Accommodation)
+                .Where(r => r.AccommodationId == accommodationId && !r.IsDeleted)
+                .ToList();
+        }
+
+        public List<Request> GetAllByHostId(Guid hostId)
+        {
+            return _dbSet
+                .Include(r => r.Accommodation)
+                .Where(r => r.Accommodation.OwnerId == hostId && !r.IsDeleted)
+                .ToList();
+        }
     }
 }

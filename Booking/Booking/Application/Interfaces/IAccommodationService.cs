@@ -21,5 +21,6 @@ namespace Booking.Application.Interfaces
         public PagedResult<AccommodationAndPriceDto> GetAccomodationByFilters(string? location, int guestNumber,DateTime from, DateTime to);
         public Result<AccommodationDto> ToggleAutoReservation(Guid accommodationId);
         public Result<List<AccommodationDto>> GetByOwnerId(Guid id);
+        public List<Accommodation> GetAll();
     }
 }
