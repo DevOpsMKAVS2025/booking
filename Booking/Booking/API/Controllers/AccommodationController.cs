@@ -1,6 +1,5 @@
 ﻿using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
-using Booking.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.API.Controllers
