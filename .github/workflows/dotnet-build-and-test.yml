@@ -58,7 +58,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        dotnet test ./Booking.Tests \
+        dotnet test ./Booking/Booking.Tests \
           --verbosity normal \
           --logger "trx;LogFileName=TestResults.trx" \
           /p:CollectCoverage=true \
