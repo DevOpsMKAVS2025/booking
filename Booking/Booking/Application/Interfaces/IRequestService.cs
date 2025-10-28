@@ -15,7 +15,7 @@ namespace Booking.Application.Interfaces
         Result<PagedResult<RequestDto>> GetPaged(int page, int pageSize);
         Task<Result> DeleteRequest(Guid requestId);
         Task<Result<RequestDto>> ApproveRequest(Guid requestId);
-        Task<Result<RequestDto>> RejectRequest(Guid requestId);
+        Task<Result<RequestDto>> RejectReservation(Guid requestId);
         Task<Result<IEnumerable<RequestWithCancelCountDto>>> GetRequestsWithCancelCountByAccommodation(Guid accommodationId);
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByAccommodationId(Guid accommodationId);
         Task<Result<IEnumerable<RequestDto>>> GetAcceptedByGuestId(Guid guestId);

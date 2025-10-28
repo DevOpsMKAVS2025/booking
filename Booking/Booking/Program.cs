@@ -22,7 +22,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Version = "v1",       
+        Version = "v1",
         Title = "Booking API"
     });
 });
@@ -30,6 +30,22 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AuthDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDBString")));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CORS_CONFIG",
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                      });
+});
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "Booking_";
+});
+
 
 var app = builder.Build();
 
@@ -43,7 +59,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-
+app.UseCors("CORS_CONFIG");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 

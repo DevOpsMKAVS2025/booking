@@ -69,7 +69,7 @@ namespace Booking.API.Controllers
         [HttpPost("reject/{requestId}")]
         public async Task<ActionResult> Reject(Guid requestId)
         {
-            Result<RequestDto> result = await _requestService.RejectRequest(requestId);
+            Result<RequestDto> result = await _requestService.RejectReservation(requestId);
             return CreateResponse(result);
         }
 

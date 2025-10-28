@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 using AutoMapper;
 using Booking.Application.Dtos;
 using Booking.Application.Interfaces;
@@ -8,6 +9,7 @@ using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using Booking.Infrastructure.Database.Repositories;
 using FluentResults;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Booking.Application.UseCases
 {
@@ -15,11 +17,13 @@ namespace Booking.Application.UseCases
     {
         protected readonly IMapper _mapper;
         protected readonly IAccommodationRepository _repository;
+        private readonly IDistributedCache _cache;
 
-        public AccommodationService(IMapper mapper, IAccommodationRepository accommodationRepository) : base(mapper)
+        public AccommodationService(IMapper mapper, IAccommodationRepository accommodationRepository, IDistributedCache cache) : base(mapper)
         {
             _mapper = mapper;
             _repository = accommodationRepository;
+            _cache = cache;
         }
 
         public Result<PagedResult<AccommodationDto>> GetPaged(int page, int pageSize)
@@ -32,8 +36,25 @@ namespace Booking.Application.UseCases
         {
             try
             {
+                string cacheKey = $"accommodation:{id}";
+                var cachedJson = _cache.GetString(cacheKey);
+
+                if (!string.IsNullOrEmpty(cachedJson))
+                {
+                    var cachedData = JsonSerializer.Deserialize<AccommodationDto>(cachedJson);
+                    return Result.Ok(cachedData);
+                }
+
                 var result = _repository.Get(id);
-                return MapToDto(result);
+                var dto = MapToDto(result);
+
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                };
+                _cache.SetString(cacheKey, JsonSerializer.Serialize(dto), options);
+
+                return dto;
             }
             catch (KeyNotFoundException e)
             {
@@ -59,7 +80,13 @@ namespace Booking.Application.UseCases
             try
             {
                 var result = _repository.Update(MapToDomain(entity));
-                return MapToDto(result);
+                var dto = MapToDto(result);
+
+                string cacheKey = $"accommodation:{entity.Id}";
+                _cache.SetString(cacheKey, JsonSerializer.Serialize(dto),
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+
+                return dto;
             }
             catch (KeyNotFoundException e)
             {
@@ -76,6 +103,9 @@ namespace Booking.Application.UseCases
             try
             {
                 _repository.Delete(id);
+                string cacheKey = $"accommodation:{id}";
+                _cache.Remove(cacheKey);
+
                 return Result.Ok();
             }
             catch (KeyNotFoundException e)
@@ -299,16 +329,17 @@ namespace Booking.Application.UseCases
             {
                 var accommodation = _repository.Get(accommodationId);
                 if (accommodation == null)
-                {
-                    return Result.Fail(FailureCode.NotFound)
-                                 .WithError("Accommodation not found");
-                }
+                    return Result.Fail(FailureCode.NotFound).WithError("Accommodation not found");
 
                 accommodation.IsAutoReservation = !accommodation.IsAutoReservation;
 
                 var result = _repository.Update(accommodation);
 
-                return Result.Ok(_mapper.Map<AccommodationDto>(result));
+                string cacheKey = $"accommodation:{accommodationId}";
+                _cache.SetString(cacheKey, JsonSerializer.Serialize(MapToDto(result)),
+                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+
+                return MapToDto(result);
             }
             catch (Exception e)
             {
