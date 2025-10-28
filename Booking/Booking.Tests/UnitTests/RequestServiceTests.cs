@@ -35,7 +35,6 @@ namespace Booking.Tests.UnitTests
             );
         }
 
-        // Helper metoda za postavljanje Id vrednosti pomoću refleksije
         private static T SetId<T>(T entity, Guid id)
         {
             var property = typeof(T).GetProperty(nameof(Entity.Id),
@@ -109,7 +108,6 @@ namespace Booking.Tests.UnitTests
                 new RequestDto { Id = Guid.NewGuid() }
             };
 
-            // Simulacija cache-a preko GetAsync
             _cacheMock.Setup(c => c.GetAsync(cacheKey, default))
                       .ReturnsAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cachedRequests)));
 
@@ -127,19 +125,15 @@ namespace Booking.Tests.UnitTests
             var request = SetId(new Request { State = RequestState.ACCEPTED }, Guid.NewGuid());
             var requests = new List<Request> { request };
 
-            // Cache je prazna
             _cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), default))
                       .ReturnsAsync((byte[])null);
 
-            // Repository vraća listu zahteva
             _requestRepositoryMock.Setup(r => r.GetAcceptedByAccommodationId(accommodationId))
                                   .ReturnsAsync(requests);
 
-            // Mapper vraća DTO listu
             _mapperMock.Setup(m => m.Map<IEnumerable<RequestDto>>(It.IsAny<IEnumerable<Request>>()))
                        .Returns((IEnumerable<Request> src) => src.Select(r => new RequestDto { Id = r.Id }).ToList());
 
-            // SetAsync za cache
             _cacheMock.Setup(c => c.SetAsync(It.IsAny<string>(),
                                              It.IsAny<byte[]>(),
                                              It.IsAny<DistributedCacheEntryOptions>(),
@@ -154,6 +148,76 @@ namespace Booking.Tests.UnitTests
                                               It.IsAny<byte[]>(),
                                               It.IsAny<DistributedCacheEntryOptions>(),
                                               default), Times.Once);
+        }
+
+        [Fact]
+        public async Task RejectReservation_ShouldFail_WhenRequestNotFound()
+        {
+            // Arrange
+            var requestId = Guid.NewGuid();
+            _requestRepositoryMock.Setup(r => r.GetById(It.IsAny<Guid>()))
+                                  .ReturnsAsync((Request)null);
+
+            // Act
+            var result = await _service.RejectReservation(requestId);
+
+            // Assert
+            Assert.True(result.IsFailed);
+            Assert.Equal("Reservation not found or cannot be rejected", result.Errors.First().Message);
+        }
+
+        [Fact]
+        public async Task RejectReservation_ShouldFail_WhenStateIsPending()
+        {
+            // Arrange
+            var requestId = Guid.NewGuid();
+            var request = SetId(new Request { State = RequestState.PENDING }, requestId);
+
+            _requestRepositoryMock.Setup(r => r.GetById(requestId))
+                                  .ReturnsAsync(request);
+
+            // Act
+            var result = await _service.RejectReservation(requestId);
+
+            // Assert
+            Assert.True(result.IsFailed);
+            Assert.Equal("Reservation not found or cannot be rejected", result.Errors.First().Message);
+        }
+
+        [Fact]
+        public async Task RejectReservation_ShouldSucceed_WhenRequestIsAccepted()
+        {
+            // Arrange
+            var requestId = Guid.NewGuid();
+            var accommodationId = Guid.NewGuid();
+
+            var request = SetId(new Request
+            {
+                State = RequestState.ACCEPTED,
+                AccommodationId = accommodationId
+            }, requestId);
+
+            _requestRepositoryMock.Setup(r => r.GetById(requestId))
+                                  .ReturnsAsync(request);
+
+            _requestRepositoryMock.Setup(r => r.Update(request))
+                                  .Returns(Task.CompletedTask);
+
+            _requestRepositoryMock.Setup(r => r.SaveChanges())
+                                  .Returns(Task.CompletedTask);
+
+            _mapperMock.Setup(m => m.Map<RequestDto>(request))
+                       .Returns(new RequestDto { Id = requestId });
+
+            // Act
+            var result = await _service.RejectReservation(requestId);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal(RequestState.USER_REJECT, request.State);
+            _requestRepositoryMock.Verify(r => r.Update(request), Times.Once);
+            _cacheMock.Verify(c => c.RemoveAsync($"accepted_requests_{accommodationId}",
+                                                 default), Times.Once);
         }
     }
 }
