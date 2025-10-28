@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Booking.Infrastructure.Database;
 using Booking;
+using Booking.BuildingBlocks.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-
+builder.Services.Configure<AwsSettings>(builder.Configuration.GetSection("AWS"));
 builder.Services.AddControllers();
 builder.Services.ConfigureBooking();
 builder.Services.AddEndpointsApiExplorer();

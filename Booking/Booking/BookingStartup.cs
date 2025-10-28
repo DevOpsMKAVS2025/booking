@@ -28,6 +28,7 @@ namespace Booking
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRequestService, RequestService>();
             services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<IImageService, ImageService>();
         }
         private static void SetupInfrastructure(IServiceCollection services)
         {
