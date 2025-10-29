@@ -51,7 +51,6 @@ namespace Booking.Tests.IntegrationTests
                             From = DateTime.UtcNow,
                             To = DateTime.UtcNow.AddDays(10)
                         },
-                        PriceType = PriceType.PER_GUEST
                     }
                 },
                 GlobalPrice = 100,
@@ -133,7 +132,6 @@ namespace Booking.Tests.IntegrationTests
                         From = DateTime.UtcNow,
                         To = DateTime.UtcNow.AddDays(10)
                     },
-                    PriceType = PriceType.PER_GUEST
                 }
             },
                 GlobalPrice = 100,
@@ -226,7 +224,6 @@ namespace Booking.Tests.IntegrationTests
                 {
                     Amount = 80,
                     Duration = new DateRange { From = now, To = now.AddDays(5) },
-                    PriceType = PriceType.PER_UNIT
                 }
             },
                 GlobalPrice = 80,
