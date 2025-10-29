@@ -1,67 +1,114 @@
 ﻿using Booking.Infrastructure.Database;
+using DotNet.Testcontainers.Configurations;
+using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 
 namespace Booking.Tests.IntegrationTests
 {
     public class IntegrationTestBase : IAsyncLifetime
     {
+        private readonly PostgreSqlContainer _bookingDbContainer;
+        private readonly PostgreSqlContainer _authDbContainer;
+        private readonly RedisContainer _redisContainer;
+
         protected readonly HttpClient _httpClient;
         protected readonly IServiceScopeFactory _scopeFactory;
         protected readonly JsonSerializerOptions _jsonSerializerOptions;
+        private readonly WebApplicationFactory<Program> _factory;
 
         public IntegrationTestBase()
         {
-            var factory = new WebApplicationFactory<Program>()
+            _bookingDbContainer = new PostgreSqlBuilder()
+                .WithDatabase("booking-test-database")
+                .WithUsername("postgres")
+                .WithPassword("admin")
+                .WithImage("postgres:15")
+                .Build();
+
+            _authDbContainer = new PostgreSqlBuilder()
+                .WithDatabase("auth-test-database")
+                .WithUsername("postgres")
+                .WithPassword("admin")
+                .WithImage("postgres:15")
+                .Build();
+
+            _redisContainer = new RedisBuilder()
+                .WithImage("redis:7-alpine")
+                .WithPortBinding(6379, true)
+                .Build();
+
+            // Start containers synchronously before configuring the WebApplicationFactory
+            _bookingDbContainer.StartAsync().GetAwaiter().GetResult();
+            _authDbContainer.StartAsync().GetAwaiter().GetResult();
+            _redisContainer.StartAsync().GetAwaiter().GetResult();
+
+            _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
+                    builder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        // Now safe to use GetConnectionString() since containers are started
+                        config.AddInMemoryCollection(new Dictionary<string, string>
+                        {
+                            {"Redis:ConnectionString", _redisContainer.GetConnectionString()}
+                        });
+                    });
+
                     builder.ConfigureServices(services =>
                     {
-                        var sp = services.BuildServiceProvider();
-                        var configuration = sp.GetRequiredService<IConfiguration>();
-
-                        // BookingDbContext
                         var bookingDescriptor = services.SingleOrDefault(
                             d => d.ServiceType == typeof(DbContextOptions<BookingDbContext>));
                         if (bookingDescriptor != null)
                             services.Remove(bookingDescriptor);
 
-                        services.AddDbContext<BookingDbContext>(options =>
-                            options.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=test-booking-db"));
-
-                        // AuthDbContext
                         var authDescriptor = services.SingleOrDefault(
                             d => d.ServiceType == typeof(DbContextOptions<AuthDBContext>));
                         if (authDescriptor != null)
                             services.Remove(authDescriptor);
 
+                        services.AddDbContext<BookingDbContext>(options =>
+                            options.UseNpgsql(_bookingDbContainer.GetConnectionString()));
+
                         services.AddDbContext<AuthDBContext>(options =>
-                            options.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=test-auth-db"));
+                            options.UseNpgsql(_authDbContainer.GetConnectionString()));
+
+                        // Configure Redis
+                        services.AddStackExchangeRedisCache(options =>
+                        {
+                            options.Configuration = _redisContainer.GetConnectionString();
+                        });
                     });
                 });
 
-            _httpClient = factory.CreateClient();
-            _scopeFactory = factory.Services.GetRequiredService<IServiceScopeFactory>();
+            _httpClient = _factory.CreateClient();
+            _scopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
             _jsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        // ✅ Reset svih baza pre svakog testa
         public async Task InitializeAsync()
         {
+            // Containers are already started in the constructor
             await ResetDatabaseAsync<BookingDbContext>();
             await ResetDatabaseAsync<AuthDBContext>();
         }
 
-        public Task DisposeAsync() => Task.CompletedTask;
+        public async Task DisposeAsync()
+        {
+            await _bookingDbContainer.DisposeAsync();
+            await _authDbContainer.DisposeAsync();
+            await _redisContainer.DisposeAsync();
+            await _factory.DisposeAsync();
+        }
 
         private async Task ResetDatabaseAsync<T>() where T : DbContext
         {
@@ -72,7 +119,6 @@ namespace Booking.Tests.IntegrationTests
             await dbContext.Database.EnsureCreatedAsync();
         }
 
-        // ✅ Seed podataka u određeni DbContext
         protected async Task SeedDatabaseAsync<T>(Func<T, Task> seeder) where T : DbContext
         {
             using var scope = _scopeFactory.CreateScope();
@@ -82,7 +128,6 @@ namespace Booking.Tests.IntegrationTests
             await dbContext.SaveChangesAsync();
         }
 
-        // ✅ Pristup kontekstu direktno iz testa
         protected T GetDbContext<T>() where T : DbContext
         {
             var scope = _scopeFactory.CreateScope();
