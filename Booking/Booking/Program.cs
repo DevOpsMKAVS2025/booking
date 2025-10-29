@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CORS_CONFIG", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // URL tvoje Angular app
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -19,17 +19,6 @@ builder.Services.Configure<AwsSettings>(builder.Configuration.GetSection("AWS"))
 builder.Services.AddControllers();
 builder.Services.ConfigureBooking();
 builder.Services.AddEndpointsApiExplorer();
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200") 
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
-});
 
 builder.Services.AddSwaggerGen(options =>
 {
