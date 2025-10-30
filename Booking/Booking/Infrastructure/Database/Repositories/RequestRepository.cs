@@ -134,7 +134,7 @@ namespace Booking.Infrastructure.Repositories
                 .Where(r => r.AccommodationId == accommodationId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
-                            && r.StartDate >= DateTime.UtcNow)
+                            && r.EndDate > DateTime.UtcNow)
                 .ToListAsync();
         }
 
@@ -145,7 +145,7 @@ namespace Booking.Infrastructure.Repositories
                 .Where(r => r.GuestId == guestId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
-                            && r.StartDate >= DateTime.UtcNow)
+                            && r.EndDate > DateTime.UtcNow)
                 .ToListAsync();
         }
 
@@ -156,7 +156,7 @@ namespace Booking.Infrastructure.Repositories
                             && r.GuestId == guestId
                             && r.State == RequestState.ACCEPTED
                             && !r.IsDeleted
-                            && r.StartDate >= DateTime.UtcNow)
+                            && r.EndDate > DateTime.UtcNow)
                 .ToListAsync();
         }
 
