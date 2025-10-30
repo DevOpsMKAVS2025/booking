@@ -15,7 +15,7 @@ COPY --from=build /out .
 
 RUN mkdir -p /app/../../../Logs
 
-EXPOSE 5156
+EXPOSE 5157
 
 ENTRYPOINT ["dotnet", "Booking.dll"]
 

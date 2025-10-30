@@ -10,6 +10,7 @@ using Booking.Domain.Entities.RepositoryInterfaces;
 using Booking.Infrastructure.Database.Repositories;
 using FluentResults;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Booking.Application.UseCases
 {
@@ -17,13 +18,15 @@ namespace Booking.Application.UseCases
     {
         protected readonly IMapper _mapper;
         protected readonly IAccommodationRepository _repository;
-        private readonly IDistributedCache _cache;
+        private readonly IDatabase _database;
 
-        public AccommodationService(IMapper mapper, IAccommodationRepository accommodationRepository, IDistributedCache cache) : base(mapper)
+
+        public AccommodationService(IMapper mapper, IAccommodationRepository accommodationRepository, IConfiguration configuration) : base(mapper)
         {
             _mapper = mapper;
             _repository = accommodationRepository;
-            _cache = cache;
+            var redis = ConnectionMultiplexer.Connect(configuration["Redis:ConnectionString"]);
+            _database = redis.GetDatabase();
         }
 
         public Result<PagedResult<AccommodationDto>> GetPaged(int page, int pageSize)
@@ -32,33 +35,37 @@ namespace Booking.Application.UseCases
             return MapToDto(result);
         }
 
-        public Result<AccommodationDto> Get(Guid id)
+        public async Task<Result<AccommodationDto>> Get(Guid id)
         {
             try
             {
                 string cacheKey = $"accommodation:{id}";
-                var cachedJson = _cache.GetString(cacheKey);
 
-                if (!string.IsNullOrEmpty(cachedJson))
+                RedisValue cachedJson = await _database.StringGetAsync(cacheKey);
+                if (!cachedJson.IsNullOrEmpty)
                 {
                     var cachedData = JsonSerializer.Deserialize<AccommodationDto>(cachedJson);
                     return Result.Ok(cachedData);
                 }
 
                 var result = _repository.Get(id);
+                if (result == null)
+                    return Result.Fail(FailureCode.NotFound).WithError("Accommodation not found.");
+
                 var dto = MapToDto(result);
 
-                var options = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-                };
-                _cache.SetString(cacheKey, JsonSerializer.Serialize(dto), options);
+                var serialized = JsonSerializer.Serialize(dto);
+                await _database.StringSetAsync(cacheKey, serialized, TimeSpan.FromMinutes(5));
 
-                return dto;
+                return Result.Ok(dto);
             }
             catch (KeyNotFoundException e)
             {
                 return Result.Fail(FailureCode.NotFound).WithError(e.Message);
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail(FailureCode.NotFound).WithError(ex.Message); // TODO:
             }
         }
 
@@ -83,8 +90,8 @@ namespace Booking.Application.UseCases
                 var dto = MapToDto(result);
 
                 string cacheKey = $"accommodation:{entity.Id}";
-                _cache.SetString(cacheKey, JsonSerializer.Serialize(dto),
-                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+                //_cache.SetString(cacheKey, JsonSerializer.Serialize(dto),
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
 
                 return dto;
             }
@@ -104,7 +111,7 @@ namespace Booking.Application.UseCases
             {
                 _repository.Delete(id);
                 string cacheKey = $"accommodation:{id}";
-                _cache.Remove(cacheKey);
+                //_cache.Remove(cacheKey);
 
                 return Result.Ok();
             }
@@ -337,8 +344,8 @@ namespace Booking.Application.UseCases
                 var result = _repository.Update(accommodation);
 
                 string cacheKey = $"accommodation:{accommodationId}";
-                _cache.SetString(cacheKey, JsonSerializer.Serialize(MapToDto(result)),
-                    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+                //_cache.SetString(cacheKey, JsonSerializer.Serialize(MapToDto(result)),
+                //    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
 
                 return MapToDto(result);
             }

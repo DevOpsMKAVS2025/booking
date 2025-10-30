@@ -22,9 +22,9 @@ namespace Booking.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            var result = _accommodationService.Get(id);
+            var result = await _accommodationService.Get(id);
             return CreateResponse(result);
         }
 

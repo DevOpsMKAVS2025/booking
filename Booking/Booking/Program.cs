@@ -20,6 +20,8 @@ builder.Services.Configure<AwsSettings>(builder.Configuration.GetSection("AWS"))
 builder.Services.AddControllers();
 builder.Services.ConfigureBooking();
 builder.Services.AddEndpointsApiExplorer();
+var applyMigrations = builder.Configuration["Database:ApplyMigrations"] == "true";
+
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -34,15 +36,26 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
 builder.Services.AddDbContext<AuthDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDBString")));
 
+string redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ??
+                               "redis:6379";
+
+builder.Configuration["Redis:ConnectionString"] = redisConnectionString;
+
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = "localhost:6379";
     options.InstanceName = "Booking_";
 });
+var port = builder.Configuration["Port"] ?? "5157";
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(int.Parse(port));
+});
 
 
 var app = builder.Build();
-
+if (applyMigrations) app.ApplyMigrations();
 
 if (app.Environment.IsDevelopment())
 {
