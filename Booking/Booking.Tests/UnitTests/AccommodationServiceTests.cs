@@ -6,6 +6,9 @@ using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Booking.Tests.Application.UseCases
@@ -20,7 +23,9 @@ namespace Booking.Tests.Application.UseCases
         {
             _mapperMock = new Mock<IMapper>();
             _repositoryMock = new Mock<IAccommodationRepository>();
-            _service = new AccommodationService(_mapperMock.Object, _repositoryMock.Object);
+            var options = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache cache = new MemoryDistributedCache(options);
+            _service = new AccommodationService(_mapperMock.Object, _repositoryMock.Object, cache);
         }
         private static void SetId(Entity entity, Guid id)
         {

@@ -10,7 +10,10 @@ using Booking.Infrastructure.Database;
 using Booking.Infrastructure.Database.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Booking.Tests.IntegrationTests
@@ -34,7 +37,9 @@ namespace Booking.Tests.IntegrationTests
             // Arrange
             using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-            var service = new AccommodationService(_mapper, repository);
+            var options = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache cache = new MemoryDistributedCache(options);
+            var service = new AccommodationService(_mapper, repository, cache);
 
             var dto = new AccommodationDto
             {
@@ -65,7 +70,9 @@ namespace Booking.Tests.IntegrationTests
             using (var scope = _scopeFactory.CreateScope())
             {
                 var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-                var service = new AccommodationService(_mapper, repository);
+                var options = Options.Create(new MemoryDistributedCacheOptions());
+                IDistributedCache cache = new MemoryDistributedCache(options);
+                var service = new AccommodationService(_mapper, repository, cache);
 
                 var dto = new AccommodationDto
                 {
@@ -84,7 +91,9 @@ namespace Booking.Tests.IntegrationTests
             using (var scope = _scopeFactory.CreateScope())
             {
                 var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-                var service = new AccommodationService(_mapper, repository);
+                var options = Options.Create(new MemoryDistributedCacheOptions());
+                IDistributedCache cache = new MemoryDistributedCache(options);
+                var service = new AccommodationService(_mapper, repository, cache);
 
                 var dto = new AccommodationDto
                 {
@@ -111,7 +120,9 @@ namespace Booking.Tests.IntegrationTests
             // Arrange
             using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-            var service = new AccommodationService(_mapper, repository);
+            var options = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache cache = new MemoryDistributedCache(options);
+            var service = new AccommodationService(_mapper, repository, cache);
 
             var dto = new AccommodationDto
             {

@@ -114,7 +114,7 @@ namespace Booking.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetRatings(Guid guestId)
+        public IActionResult GetRatings()
         {
             var accommodations = _accommodationService.GetAll();
 
