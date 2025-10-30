@@ -42,7 +42,7 @@ namespace Booking.Infrastructure.Repositories
                 .Include(r => r.Accommodation)
                 .Where(r => r.GuestId == guestId
                     && r.State == RequestState.PENDING
-                    && r.EndDate > DateTime.UtcNow
+                    && r.StartDate > DateTime.UtcNow
                     && !r.IsDeleted)
                 .ToListAsync();
         }
@@ -68,7 +68,7 @@ namespace Booking.Infrastructure.Repositories
                 .Where(r => r.AccommodationId == accommodationId
                     && r.GuestId == guestId
                     && r.State == RequestState.PENDING
-                    && r.EndDate > DateTime.UtcNow
+                    && r.StartDate > DateTime.UtcNow
                     && !r.IsDeleted)
                 .ToListAsync();
         }
@@ -78,7 +78,7 @@ namespace Booking.Infrastructure.Repositories
             return await _dbSet
                 .Where(r => r.AccommodationId == accommodationId
                     && r.State == RequestState.PENDING
-                    && r.EndDate > DateTime.UtcNow
+                    && r.StartDate > DateTime.UtcNow
                     && !r.IsDeleted)
                 .ToListAsync();
         }
@@ -101,7 +101,7 @@ namespace Booking.Infrastructure.Repositories
             return await _dbSet
                 .Where(r => r.AccommodationId == accommodationId
                             && r.State == RequestState.PENDING
-                            && r.EndDate > DateTime.UtcNow
+                            && r.StartDate > DateTime.UtcNow
                             && !r.IsDeleted)
                 .Select(r => new RequestWithCancelCountDto
                 {
