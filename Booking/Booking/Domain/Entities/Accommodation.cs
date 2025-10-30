@@ -16,6 +16,7 @@ namespace Booking.Domain.Entities
         public bool IsAutoReservation { get; set; } = false;
         public PriceType PriceType { get; set; }
         public Guid OwnerId { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 
     public enum ConvenieceType

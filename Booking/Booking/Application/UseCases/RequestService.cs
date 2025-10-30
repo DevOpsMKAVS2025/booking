@@ -285,4 +285,9 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
     {
         return _repository.GetAllByHostId(hostId);
     }
+    
+    public async Task<bool> hasReservations(Guid userId, bool isOwner)
+    {
+        return isOwner ? await _repository.hasReservationsOwner(userId) : await _repository.hasReservationsGuest(userId);
+    }
 }

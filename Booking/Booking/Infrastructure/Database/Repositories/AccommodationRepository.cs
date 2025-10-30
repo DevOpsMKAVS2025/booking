@@ -1,10 +1,6 @@
-﻿using Booking.Application.Dtos;
-using Booking.BuildingBlocks.Core.UseCases;
-using Booking.BuildingBlocks.Core;
-using Booking.BuildingBlocks.Infrastructure;
+﻿using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
-using FluentResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Infrastructure.Database.Repositories
@@ -23,14 +19,25 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public PagedResult<Accommodation> GetPaged(int page, int pageSize)
         {
-            var task = _dbSet.GetPagedById(page, pageSize);
-            task.Wait();
-            return task.Result;
+            var query = _dbSet
+                .Where(a => !a.IsDeleted)
+                .OrderBy(a => a.Id);
+
+            int totalCount = query.Count();
+            var items = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<Accommodation>(items, totalCount);
         }
+
 
         public Accommodation Get(Guid id)
         {
-            Accommodation entity = _dbSet.Find(id);
+            Accommodation entity = _dbSet
+                .Where(a => a.Id == id && !a.IsDeleted)
+                .FirstOrDefault();
             if (entity == null) throw new KeyNotFoundException("Not found: " + id);
             return entity;
         }
@@ -113,7 +120,16 @@ namespace Booking.Infrastructure.Database.Repositories
 
         public List<Accommodation> GetByOwnerId(Guid id)
         {
-            return _dbSet.Where(x => x.OwnerId==id).ToList();
+            return _dbSet.Where(x => x.OwnerId==id && !x.IsDeleted).ToList();
+        }
+
+        public async Task DeleteAccommodationsByOwnerId(Guid id)
+        {
+            await _dbSet
+                .Where(a => a.OwnerId == id)
+                .ExecuteUpdateAsync(a => a
+                    .SetProperty(p => p.IsDeleted, p => true)
+                );
         }
 
         public List<Accommodation> GetAll()

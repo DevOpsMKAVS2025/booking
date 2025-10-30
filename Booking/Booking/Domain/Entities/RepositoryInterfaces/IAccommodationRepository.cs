@@ -19,6 +19,6 @@ namespace Booking.Domain.Entities.RepositoryInterfaces
         public Availability GetAvailability(Guid accommodationId, Guid availabilityId);
         public List<Accommodation> GetByOwnerId(Guid id);
         public List<Accommodation> GetAll();
-
+        Task DeleteAccommodationsByOwnerId(Guid id);
     }
 }

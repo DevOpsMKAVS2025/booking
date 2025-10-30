@@ -113,5 +113,12 @@ namespace Booking.API.Controllers
             var accommodations = _accommodationService.GetByOwnerId(ownerId);
             return CreateResponse(accommodations);
         }
+
+        [HttpDelete("owner/{ownerId}")]
+        public IActionResult DeleteAccommodationsForOwner(Guid ownerId)
+        {
+            var result = _accommodationService.DeleteAccommodationsForOwner(ownerId);
+            return NoContent();
+        }
     }
 }

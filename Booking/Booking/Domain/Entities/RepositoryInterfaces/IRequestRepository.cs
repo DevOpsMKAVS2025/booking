@@ -25,5 +25,7 @@ namespace Booking.Domain.Entities.RepositoryInterfaces
         List<Request> GetAllByGuestId(Guid guestId);
         List<Request> GetAllByAccommodationId(Guid accommodationId);
         List<Request> GetAllByHostId(Guid hostId);
+        Task<bool> hasReservationsOwner(Guid ownerId);
+        Task<bool> hasReservationsGuest(Guid guestId);
     }
 }
