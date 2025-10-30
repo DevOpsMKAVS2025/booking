@@ -65,7 +65,7 @@ namespace Booking.Tests.IntegrationTests
                 await Task.CompletedTask;
             });
 
-            var requestDto = new Application.Dtos.RequestDto
+            var requestDto = new Booking.Application.Dtos.RequestDto
             {
                 AccommodationId = accommodationId,
                 GuestId = guestId,

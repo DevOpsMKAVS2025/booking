@@ -15,6 +15,7 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
 builder.Services.Configure<AwsSettings>(builder.Configuration.GetSection("AWS"));
 builder.Services.AddControllers();
 builder.Services.ConfigureBooking();
@@ -32,15 +33,6 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AuthDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDBString")));
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: "CORS_CONFIG",
-                      policy =>
-                      {
-                          policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                      });
-});
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -66,7 +58,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseCors("CORS_CONFIG");
 
 app.Run();
 
