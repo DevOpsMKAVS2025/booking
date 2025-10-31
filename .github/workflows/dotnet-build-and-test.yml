@@ -1,0 +1,80 @@
+name: Build And Test .NET
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+          
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Wait for PostgreSQL
+      run: |
+        for i in {1..10}; do
+          nc -zv localhost 5432 && break
+          echo "Waiting for PostgreSQL..."
+          sleep 5
+        done      
+
+    - name: Create and clone test databases
+      env:
+        PGPASSWORD: admin
+      run: |
+        echo "Creating booking-test-database..."
+        psql -h localhost -U postgres -d postgres -c "CREATE DATABASE \"booking-test-database\";"
+        echo "Cloning booking-database to booking-test-database..."
+        pg_dump -h localhost -U postgres -d booking-database | psql -h localhost -U postgres -d booking-test-database
+
+        echo "Creating auth-test-database..."
+        psql -h localhost -U postgres -d postgres -c "CREATE DATABASE \"auth-test-database\";"
+        echo "Cloning auth-database to auth-test-database..."
+        pg_dump -h localhost -U postgres -d auth-database | psql -h localhost -U postgres -d auth-test-database
+
+    - name: Restore dependencies for default project
+      run: dotnet restore ./Booking
+
+    - name: Restore dependencies for test project
+      run: dotnet restore ./Booking/Booking.Tests
+
+    - name: Build default project
+      run: dotnet build ./Booking --no-restore
+
+    - name: Run tests with coverage
+      run: |
+        dotnet test ./Booking/Booking.Tests \
+          --verbosity normal \
+          --logger "trx;LogFileName=TestResults.trx" \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=cobertura \
+          /p:CoverletOutput=./TestResults/coverage.xml
+
