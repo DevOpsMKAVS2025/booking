@@ -5,21 +5,22 @@ using Booking.BuildingBlocks.Core.UseCases;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentResults;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
+using StackExchange.Redis;
 
 public class RequestService : BaseService<RequestDto, Request>, IRequestService
 {
     private readonly IMapper _mapper;
-    private readonly IDistributedCache _cache;
+    private readonly IDatabase _database;
     private readonly IRequestRepository _repository;
     private readonly IAccommodationRepository _accommodationRepository;
 
-    public RequestService(IMapper mapper, IDistributedCache cache, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository)
+    public RequestService(IMapper mapper, IConfiguration configuration, IRequestRepository requestRepository, IAccommodationRepository accommodationRepository)
         : base(mapper)
     {
         _mapper = mapper;
-        _cache = cache;
+        var redis = ConnectionMultiplexer.Connect(configuration["Redis:ConnectionString"]);
+        _database = redis.GetDatabase();
         _repository = requestRepository;
         _accommodationRepository = accommodationRepository;
     }
@@ -59,7 +60,7 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             await _repository.Create(request);
             await _repository.SaveChanges();
 
-            await _cache.RemoveAsync($"accepted_requests_{dto.AccommodationId}");
+            //_database.StringGetDelete($"accepted_requests_{dto.AccommodationId}");
 
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
@@ -81,7 +82,7 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             await _repository.Update(request);
             await _repository.SaveChanges();
 
-            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
+            _database.StringGetDelete($"accepted_requests_{request.AccommodationId}");
 
             return Result.Ok();
         }
@@ -169,7 +170,7 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
 
             await _repository.SaveChanges();
 
-            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
+            _database.StringGetDelete($"accepted_requests_{request.AccommodationId}");
 
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
@@ -191,7 +192,7 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
             await _repository.Update(request);
             await _repository.SaveChanges();
 
-            await _cache.RemoveAsync($"accepted_requests_{request.AccommodationId}");
+            _database.StringGetDelete($"accepted_requests_{request.AccommodationId}");
 
             return Result.Ok(_mapper.Map<RequestDto>(request));
         }
@@ -219,23 +220,19 @@ public class RequestService : BaseService<RequestDto, Request>, IRequestService
         try
         {
             var cacheKey = $"accepted_requests_{accommodationId}";
-            var cachedData = await _cache.GetStringAsync(cacheKey);
+            RedisValue cachedJson = await _database.StringGetAsync(cacheKey);
 
-            if (cachedData != null)
+            if (!cachedJson.IsNullOrEmpty)
             {
-                var cachedRequests = JsonSerializer.Deserialize<IEnumerable<RequestDto>>(cachedData);
-                return Result.Ok(cachedRequests);
+                var cachedData = JsonSerializer.Deserialize<IEnumerable<RequestDto>>(cachedJson);
+                return Result.Ok(cachedData);
             }
 
             var requests = await _repository.GetAcceptedByAccommodationId(accommodationId);
             var dtos = _mapper.Map<IEnumerable<RequestDto>>(requests);
 
-            var options = new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            };
-
-            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(dtos), options);
+            var serialized = JsonSerializer.Serialize(dtos);
+            await _database.StringSetAsync(cacheKey, serialized, TimeSpan.FromSeconds(5));
 
             return Result.Ok(dtos);
         }

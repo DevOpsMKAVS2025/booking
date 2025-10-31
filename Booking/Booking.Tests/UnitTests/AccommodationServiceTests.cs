@@ -8,8 +8,10 @@ using Booking.Domain.Entities.RepositoryInterfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
+using StackExchange.Redis;
 
 namespace Booking.Tests.Application.UseCases
 {
@@ -18,14 +20,15 @@ namespace Booking.Tests.Application.UseCases
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IAccommodationRepository> _repositoryMock;
         private readonly AccommodationService _service;
+        private readonly Mock<IDatabase> _databaseMock = new();
 
         public AccommodationServiceTests()
         {
             _mapperMock = new Mock<IMapper>();
             _repositoryMock = new Mock<IAccommodationRepository>();
-            var options = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache cache = new MemoryDistributedCache(options);
-            _service = new AccommodationService(_mapperMock.Object, _repositoryMock.Object, cache);
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(c => c["Redis:ConnectionString"]).Returns("localhost:6379");
+            _service = new AccommodationService(_mapperMock.Object, _repositoryMock.Object, configurationMock.Object);
         }
         private static void SetId(Entity entity, Guid id)
         {
@@ -49,7 +52,7 @@ namespace Booking.Tests.Application.UseCases
         }
 
         [Fact]
-        public void Get_ShouldReturnAccommodation_WhenExists()
+        public async Task Get_ShouldReturnAccommodation_WhenExistsAsync()
         {
             var id = Guid.NewGuid();
             var acc = new Accommodation { Name = "Hotel" };
@@ -59,18 +62,18 @@ namespace Booking.Tests.Application.UseCases
             _repositoryMock.Setup(r => r.Get(id)).Returns(acc);
             _mapperMock.Setup(m => m.Map<AccommodationDto>(acc)).Returns(dto);
 
-            var result = _service.Get(id);
+            var result = await _service.Get(id);
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().BeEquivalentTo(dto);
         }
 
         [Fact]
-        public void Get_ShouldFail_WhenNotFound()
+        public async void Get_ShouldFail_WhenNotFound()
         {
             _repositoryMock.Setup(r => r.Get(It.IsAny<Guid>())).Throws(new KeyNotFoundException("Not found"));
 
-            var result = _service.Get(Guid.NewGuid());
+            var result = await _service.Get(Guid.NewGuid());
 
             result.IsFailed.Should().BeTrue();
         }
