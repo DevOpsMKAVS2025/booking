@@ -55,7 +55,7 @@ namespace Booking.Application.UseCases
                 var dto = MapToDto(result);
 
                 var serialized = JsonSerializer.Serialize(dto);
-                await _database.StringSetAsync(cacheKey, serialized, TimeSpan.FromMinutes(5));
+                await _database.StringSetAsync(cacheKey, serialized, TimeSpan.FromSeconds(5));
 
                 return Result.Ok(dto);
             }
@@ -90,8 +90,8 @@ namespace Booking.Application.UseCases
                 var dto = MapToDto(result);
 
                 string cacheKey = $"accommodation:{entity.Id}";
-                //_cache.SetString(cacheKey, JsonSerializer.Serialize(dto),
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
+                var serialized = JsonSerializer.Serialize(dto);
+                _database.StringSet(cacheKey, serialized, TimeSpan.FromSeconds(5));
 
                 return dto;
             }
@@ -111,7 +111,7 @@ namespace Booking.Application.UseCases
             {
                 _repository.Delete(id);
                 string cacheKey = $"accommodation:{id}";
-                //_cache.Remove(cacheKey);
+                _database.StringGetDelete(cacheKey);
 
                 return Result.Ok();
             }
@@ -199,7 +199,7 @@ namespace Booking.Application.UseCases
 
         public PagedResult<AccommodationAndPriceDto> GetAccomodationByFilters(string? location, int guestNumber, DateTime from, DateTime to)
         {
-            var accommodations = _repository.GetPaged(0, 0);
+            var accommodations = _repository.GetPaged(1, 1000);
 
             var filteredAccommodations = accommodations.Results.AsQueryable();
 
@@ -344,8 +344,8 @@ namespace Booking.Application.UseCases
                 var result = _repository.Update(accommodation);
 
                 string cacheKey = $"accommodation:{accommodationId}";
-                //_cache.SetString(cacheKey, JsonSerializer.Serialize(MapToDto(result)),
-                //    new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+                var serialized = JsonSerializer.Serialize(MapToDto(result));
+                _database.StringSet(cacheKey, serialized, TimeSpan.FromSeconds(5));
 
                 return MapToDto(result);
             }
