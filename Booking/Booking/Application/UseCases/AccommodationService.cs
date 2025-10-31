@@ -221,7 +221,6 @@ namespace Booking.Application.UseCases
                 if (IsAvailable(acc, from, to))
                     availableAccommodations.Add(acc);
             }
-            
 
             foreach (var acc in availableAccommodations)
             {
@@ -270,13 +269,14 @@ namespace Booking.Application.UseCases
                 if (priceForDay != null)
                 {
                     dayPrice = priceForDay.Amount;
-
-                    if (accommodation.PriceType == PriceType.PER_GUEST)
-                        dayPrice *= guestCount;
                 }
                 else
                 {
                     dayPrice = accommodation.GlobalPrice;
+                }                   
+                if (accommodation.PriceType == PriceType.PER_GUEST)
+                {
+                    dayPrice *= guestCount;
                 }
 
                 total += dayPrice;
@@ -286,9 +286,6 @@ namespace Booking.Application.UseCases
         }
         private decimal CalculatePricePerNightOrPerson(decimal price, Accommodation accommodation, int numberOfDays, int guestCount)
         {
-            if (accommodation.PriceType == PriceType.PER_GUEST)
-                return Math.Round(price/guestCount/numberOfDays,2);
-            else
                 return Math.Round(price /numberOfDays, 2);
         }
         private bool IsAvailable(Accommodation accommodation, DateTime fromDate, DateTime toDate)
