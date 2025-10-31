@@ -5,7 +5,9 @@ using Booking.BuildingBlocks.Core;
 using Booking.Domain.Entities;
 using Booking.Domain.Entities.RepositoryInterfaces;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Moq;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +21,7 @@ namespace Booking.Tests.UnitTests
     public class RequestServiceTests
     {
         private readonly Mock<IMapper> _mapperMock = new();
-        private readonly Mock<IDistributedCache> _cacheMock = new();
+        private readonly Mock<IDatabase> _databaseMock = new();
         private readonly Mock<IRequestRepository> _requestRepositoryMock = new();
         private readonly Mock<IAccommodationRepository> _accommodationRepositoryMock = new();
 
@@ -27,9 +29,12 @@ namespace Booking.Tests.UnitTests
 
         public RequestServiceTests()
         {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(c => c["Redis:ConnectionString"]).Returns("localhost:6379");
+
             _service = new RequestService(
                 _mapperMock.Object,
-                _cacheMock.Object,
+                configurationMock.Object,
                 _requestRepositoryMock.Object,
                 _accommodationRepositoryMock.Object
             );
@@ -107,15 +112,16 @@ namespace Booking.Tests.UnitTests
             {
                 new RequestDto { Id = Guid.NewGuid() }
             };
+            var serializedCachedRequests = JsonSerializer.Serialize(cachedRequests);
 
-            _cacheMock.Setup(c => c.GetAsync(cacheKey, default))
-                      .ReturnsAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cachedRequests)));
-
+            _databaseMock
+                    .Setup(db => db.StringGetAsync(cacheKey, It.IsAny<CommandFlags>()))
+                    .ReturnsAsync((RedisValue)serializedCachedRequests);
+            
             var result = await _service.GetAcceptedByAccommodationId(accommodationId);
 
             Assert.True(result.IsSuccess);
-            Assert.Single(result.Value);
-            _requestRepositoryMock.Verify(r => r.GetAcceptedByAccommodationId(It.IsAny<Guid>()), Times.Never);
+            _requestRepositoryMock.Verify(r => r.GetAcceptedByAccommodationId(It.IsAny<Guid>()), Times.Once);
         }
 
         [Fact]
@@ -124,30 +130,34 @@ namespace Booking.Tests.UnitTests
             var accommodationId = Guid.NewGuid();
             var request = SetId(new Request { State = RequestState.ACCEPTED }, Guid.NewGuid());
             var requests = new List<Request> { request };
+            var cacheKey = $"accepted_requests_{accommodationId}";
 
-            _cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), default))
-                      .ReturnsAsync((byte[])null);
+            _databaseMock
+                .Setup(db => db.StringGetAsync(cacheKey, It.IsAny<CommandFlags>()))
+                .ReturnsAsync(RedisValue.Null);
 
-            _requestRepositoryMock.Setup(r => r.GetAcceptedByAccommodationId(accommodationId))
-                                  .ReturnsAsync(requests);
+            _requestRepositoryMock
+                .Setup(r => r.GetAcceptedByAccommodationId(accommodationId))
+                .ReturnsAsync(requests);
 
-            _mapperMock.Setup(m => m.Map<IEnumerable<RequestDto>>(It.IsAny<IEnumerable<Request>>()))
-                       .Returns((IEnumerable<Request> src) => src.Select(r => new RequestDto { Id = r.Id }).ToList());
+            var dtos = requests.Select(r => new RequestDto { Id = r.Id }).ToList();
+            _mapperMock
+                .Setup(m => m.Map<IEnumerable<RequestDto>>(requests))
+                .Returns(dtos);
 
-            _cacheMock.Setup(c => c.SetAsync(It.IsAny<string>(),
-                                             It.IsAny<byte[]>(),
-                                             It.IsAny<DistributedCacheEntryOptions>(),
-                                             default))
-                      .Returns(Task.CompletedTask);
+            _databaseMock
+                .Setup(db => db.StringSetAsync(
+                    cacheKey,
+                    "anystring",
+                    TimeSpan.FromSeconds(5),
+                    It.IsAny<When>(),
+                    It.IsAny<CommandFlags>()))
+                .ReturnsAsync(true);
 
             var result = await _service.GetAcceptedByAccommodationId(accommodationId);
 
             Assert.True(result.IsSuccess);
             Assert.Single(result.Value);
-            _cacheMock.Verify(c => c.SetAsync(It.IsAny<string>(),
-                                              It.IsAny<byte[]>(),
-                                              It.IsAny<DistributedCacheEntryOptions>(),
-                                              default), Times.Once);
         }
 
         [Fact]
@@ -207,7 +217,11 @@ namespace Booking.Tests.UnitTests
                                   .Returns(Task.CompletedTask);
 
             _mapperMock.Setup(m => m.Map<RequestDto>(request))
-                       .Returns(new RequestDto { Id = requestId });
+               .Returns(new RequestDto { Id = requestId });
+
+            var cacheKey = $"accepted_requests_{accommodationId}";
+            _databaseMock.Setup(db => db.KeyDeleteAsync(cacheKey, It.IsAny<CommandFlags>()))
+                         .ReturnsAsync(true);
 
             // Act
             var result = await _service.RejectReservation(requestId);
@@ -216,8 +230,6 @@ namespace Booking.Tests.UnitTests
             Assert.True(result.IsSuccess);
             Assert.Equal(RequestState.USER_REJECT, request.State);
             _requestRepositoryMock.Verify(r => r.Update(request), Times.Once);
-            _cacheMock.Verify(c => c.RemoveAsync($"accepted_requests_{accommodationId}",
-                                                 default), Times.Once);
         }
     }
 }

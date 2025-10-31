@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -37,9 +38,8 @@ namespace Booking.Tests.IntegrationTests
             // Arrange
             using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-            var options = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache cache = new MemoryDistributedCache(options);
-            var service = new AccommodationService(_mapper, repository, cache);
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var service = new AccommodationService(_mapper, repository, configuration);
 
             var dto = new AccommodationDto
             {
@@ -52,7 +52,7 @@ namespace Booking.Tests.IntegrationTests
 
             // Act
             var createResult = service.Create(dto);
-            var getResult = service.Get(dto.Id.Value);
+            var getResult = await service.Get(dto.Id.Value);
 
             // Assert
             createResult.IsSuccess.Should().BeTrue();
@@ -70,9 +70,8 @@ namespace Booking.Tests.IntegrationTests
             using (var scope = _scopeFactory.CreateScope())
             {
                 var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-                var options = Options.Create(new MemoryDistributedCacheOptions());
-                IDistributedCache cache = new MemoryDistributedCache(options);
-                var service = new AccommodationService(_mapper, repository, cache);
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var service = new AccommodationService(_mapper, repository, configuration);
 
                 var dto = new AccommodationDto
                 {
@@ -92,8 +91,8 @@ namespace Booking.Tests.IntegrationTests
             {
                 var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
                 var options = Options.Create(new MemoryDistributedCacheOptions());
-                IDistributedCache cache = new MemoryDistributedCache(options);
-                var service = new AccommodationService(_mapper, repository, cache);
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var service = new AccommodationService(_mapper, repository, configuration);
 
                 var dto = new AccommodationDto
                 {
@@ -105,7 +104,7 @@ namespace Booking.Tests.IntegrationTests
                 };
 
                 var updateResult = service.Update(dto);
-                var getResult = service.Get(id);
+                var getResult = await service.Get(id);
 
                 // Assert
                 updateResult.IsSuccess.Should().BeTrue();
@@ -120,9 +119,8 @@ namespace Booking.Tests.IntegrationTests
             // Arrange
             using var scope = _scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IAccommodationRepository>();
-            var options = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache cache = new MemoryDistributedCache(options);
-            var service = new AccommodationService(_mapper, repository, cache);
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var service = new AccommodationService(_mapper, repository, configuration);
 
             var dto = new AccommodationDto
             {
@@ -137,7 +135,7 @@ namespace Booking.Tests.IntegrationTests
 
             // Act
             var deleteResult = service.Delete(dto.Id.Value);
-            var getResult = service.Get(dto.Id.Value);
+            var getResult = await service.Get(dto.Id.Value);
 
             // Assert
             deleteResult.IsSuccess.Should().BeTrue();
